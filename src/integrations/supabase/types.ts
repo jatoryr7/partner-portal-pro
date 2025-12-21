@@ -14,7 +14,112 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      creative_assets: {
+        Row: {
+          affiliate_link: string | null
+          asset_url: string | null
+          channel: string
+          copy_text: string | null
+          created_at: string
+          id: string
+          is_complete: boolean
+          partner_id: string
+          updated_at: string
+        }
+        Insert: {
+          affiliate_link?: string | null
+          asset_url?: string | null
+          channel: string
+          copy_text?: string | null
+          created_at?: string
+          id?: string
+          is_complete?: boolean
+          partner_id: string
+          updated_at?: string
+        }
+        Update: {
+          affiliate_link?: string | null
+          asset_url?: string | null
+          channel?: string
+          copy_text?: string | null
+          created_at?: string
+          id?: string
+          is_complete?: boolean
+          partner_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creative_assets_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partners: {
+        Row: {
+          company_name: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      stakeholders: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          partner_id: string
+          phone: string | null
+          role: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          partner_id: string
+          phone?: string | null
+          role?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          partner_id?: string
+          phone?: string | null
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stakeholders_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
