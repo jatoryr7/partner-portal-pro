@@ -1,9 +1,10 @@
-import { ArrowLeft, Check, ExternalLink, Calendar, Building2, Users, Palette } from "lucide-react";
+import { format } from "date-fns";
+import { ArrowLeft, Check, ExternalLink, Calendar, Building2, Users, Palette, FileText, User, Clock, Sparkles, Share2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { PartnerData, ChannelData } from "@/components/OnboardingWizard";
+import { PartnerData, ChannelData, NativeChannelAssets, PaidSocialSearchAssets, StandardChannelAssets } from "@/types/partner";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -12,21 +13,20 @@ interface StepSummaryProps {
   onBack: () => void;
 }
 
-const channelNames: Record<keyof ChannelData, { name: string; icon: string }> = {
-  meta: { name: "Meta", icon: "📘" },
-  tiktok: { name: "TikTok", icon: "🎵" },
-  googleDisplay: { name: "Google Display", icon: "🔍" },
-  youtube: { name: "YouTube", icon: "▶️" },
-  linkedin: { name: "LinkedIn", icon: "💼" },
+type ChannelKey = keyof ChannelData;
+
+const channelConfig: Record<ChannelKey, { name: string; icon: React.ReactNode }> = {
+  native: { name: "Native", icon: <Sparkles className="h-4 w-4" /> },
+  paidSocialSearch: { name: "Paid Social/Search", icon: <Share2 className="h-4 w-4" /> },
+  media: { name: "Media", icon: <FileText className="h-4 w-4" /> },
+  newsletter: { name: "Newsletter", icon: <Mail className="h-4 w-4" /> },
+  contentMarketing: { name: "Content Marketing", icon: <FileText className="h-4 w-4" /> },
 };
 
 export function StepSummary({ data, onBack }: StepSummaryProps) {
   const { toast } = useToast();
   const completedChannels = Object.entries(data.channels).filter(
     ([_, channel]) => channel.completed
-  );
-  const incompleteChannels = Object.entries(data.channels).filter(
-    ([_, channel]) => !channel.completed
   );
 
   const handleSubmit = () => {
@@ -36,10 +36,77 @@ export function StepSummary({ data, onBack }: StepSummaryProps) {
     });
   };
 
+  const renderChannelDetails = (key: ChannelKey, channel: ChannelData[ChannelKey]) => {
+    if (!channel.completed) return null;
+
+    if (key === "native") {
+      const native = channel as NativeChannelAssets;
+      return (
+        <div className="mt-3 pt-3 border-t border-success/20 space-y-1 text-sm">
+          {native.affiliatePlatform && (
+            <p className="text-muted-foreground">
+              Platform: <span className="text-foreground">{native.affiliatePlatform}</span>
+            </p>
+          )}
+          {native.driverTypes.length > 0 && (
+            <p className="text-muted-foreground">
+              Drivers: <span className="text-foreground">{native.driverTypes.join(", ")}</span>
+            </p>
+          )}
+          {native.fileUrls.length > 0 && (
+            <p className="text-muted-foreground">
+              Files: <span className="text-foreground">{native.fileUrls.length} uploaded</span>
+            </p>
+          )}
+        </div>
+      );
+    }
+
+    if (key === "paidSocialSearch") {
+      const paid = channel as PaidSocialSearchAssets;
+      return (
+        <div className="mt-3 pt-3 border-t border-success/20 space-y-1 text-sm">
+          {paid.mediaPlatform && (
+            <p className="text-muted-foreground">
+              Platform: <span className="text-foreground">{paid.mediaPlatform}</span>
+            </p>
+          )}
+          {paid.copyFromNative && (
+            <p className="text-muted-foreground text-primary">
+              ✓ Affiliate link copied from Native
+            </p>
+          )}
+          {paid.fileUrls.length > 0 && (
+            <p className="text-muted-foreground">
+              Files: <span className="text-foreground">{paid.fileUrls.length} uploaded</span>
+            </p>
+          )}
+        </div>
+      );
+    }
+
+    // Standard channels (media, newsletter, contentMarketing)
+    const standard = channel as StandardChannelAssets;
+    return (
+      <div className="mt-3 pt-3 border-t border-success/20 space-y-1 text-sm">
+        {standard.contextInstructions && (
+          <p className="text-muted-foreground truncate">
+            Instructions: {standard.contextInstructions.substring(0, 50)}...
+          </p>
+        )}
+        {standard.fileUrls.length > 0 && (
+          <p className="text-muted-foreground">
+            Files: <span className="text-foreground">{standard.fileUrls.length} uploaded</span>
+          </p>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Summary Header */}
-      <Card className="shadow-lg border-0 bg-card overflow-hidden">
+      <Card className="shadow-lg border border-border bg-card overflow-hidden">
         <div className="gradient-primary p-6 text-primary-foreground">
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 rounded-2xl bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center">
@@ -56,13 +123,48 @@ export function StepSummary({ data, onBack }: StepSummaryProps) {
 
         <CardContent className="p-6 space-y-6">
           {/* Company Info */}
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-healthcare-blue-light flex items-center justify-center">
-              <Building2 className="h-5 w-5 text-primary" />
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-healthcare-blue-light flex items-center justify-center">
+                <Building2 className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Company</p>
+                <p className="font-semibold text-foreground">{data.companyName}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Company</p>
-              <p className="font-semibold text-foreground">{data.companyName}</p>
+
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-healthcare-blue-light flex items-center justify-center">
+                <Clock className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Submission Date</p>
+                <p className="font-semibold text-foreground">{format(data.submissionDate, "PPP")}</p>
+              </div>
+            </div>
+
+            {data.targetLaunchDate && (
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-success-light flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-success" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Target Launch</p>
+                  <p className="font-semibold text-foreground">{format(data.targetLaunchDate, "PPP")}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-warning-light flex items-center justify-center">
+                <User className="h-5 w-5 text-warning" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Primary Contact</p>
+                <p className="font-semibold text-foreground">{data.primaryContact.name}</p>
+                <p className="text-sm text-primary">{data.primaryContact.email}</p>
+              </div>
             </div>
           </div>
 
@@ -84,8 +186,8 @@ export function StepSummary({ data, onBack }: StepSummaryProps) {
 
             <div className="grid gap-3">
               {Object.entries(data.channels).map(([key, channel]) => {
-                const channelKey = key as keyof ChannelData;
-                const config = channelNames[channelKey];
+                const channelKey = key as ChannelKey;
+                const config = channelConfig[channelKey];
                 const isComplete = channel.completed;
 
                 return (
@@ -100,7 +202,7 @@ export function StepSummary({ data, onBack }: StepSummaryProps) {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="text-xl">{config.icon}</span>
+                        <span className="text-primary">{config.icon}</span>
                         <span className="font-medium">{config.name}</span>
                       </div>
                       <Badge
@@ -120,25 +222,7 @@ export function StepSummary({ data, onBack }: StepSummaryProps) {
                       </Badge>
                     </div>
 
-                    {isComplete && (
-                      <div className="mt-3 pt-3 border-t border-success/20 space-y-1 text-sm">
-                        {channel.creativeUrl && (
-                          <p className="text-muted-foreground truncate">
-                            Creative: {channel.creativeUrl}
-                          </p>
-                        )}
-                        {channel.copy && (
-                          <p className="text-muted-foreground truncate">
-                            Copy: {channel.copy.substring(0, 50)}...
-                          </p>
-                        )}
-                        {channel.affiliateLink && (
-                          <p className="text-muted-foreground truncate">
-                            Link: {channel.affiliateLink}
-                          </p>
-                        )}
-                      </div>
-                    )}
+                    {renderChannelDetails(channelKey, channel)}
                   </div>
                 );
               })}
@@ -183,7 +267,7 @@ export function StepSummary({ data, onBack }: StepSummaryProps) {
       </Card>
 
       {/* Calendly Section */}
-      <Card className="shadow-lg border-0 bg-card">
+      <Card className="shadow-lg border border-border bg-card">
         <CardHeader>
           <div className="flex items-center gap-4">
             <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center shadow-glow">
@@ -198,7 +282,7 @@ export function StepSummary({ data, onBack }: StepSummaryProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="bg-muted/50 rounded-xl p-8 text-center">
+          <div className="bg-muted/50 rounded-xl p-8 text-center border border-border">
             <p className="text-muted-foreground mb-4">
               Calendly widget will appear here once you've configured your booking link.
             </p>

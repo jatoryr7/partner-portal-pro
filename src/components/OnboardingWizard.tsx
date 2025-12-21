@@ -6,35 +6,10 @@ import { StepCompanyInfo } from "./steps/StepCompanyInfo";
 import { StepCreativeAssets } from "./steps/StepCreativeAssets";
 import { StepStakeholders } from "./steps/StepStakeholders";
 import { StepSummary } from "./steps/StepSummary";
+import { PartnerData, initialPartnerData } from "@/types/partner";
 
-export interface PartnerData {
-  companyName: string;
-  stakeholders: Stakeholder[];
-  channels: ChannelData;
-}
-
-export interface Stakeholder {
-  id: string;
-  name: string;
-  role: string;
-  email: string;
-  phone: string;
-}
-
-export interface ChannelData {
-  meta: ChannelAssets;
-  tiktok: ChannelAssets;
-  googleDisplay: ChannelAssets;
-  youtube: ChannelAssets;
-  linkedin: ChannelAssets;
-}
-
-export interface ChannelAssets {
-  creativeUrl: string;
-  copy: string;
-  affiliateLink: string;
-  completed: boolean;
-}
+// Re-export types for backward compatibility
+export { type PartnerData, type Stakeholder, type ChannelData } from "@/types/partner";
 
 const steps = [
   { id: 1, title: "Company Info", icon: Building2 },
@@ -43,27 +18,17 @@ const steps = [
   { id: 4, title: "Review & Book", icon: Calendar },
 ];
 
-const initialChannelData: ChannelData = {
-  meta: { creativeUrl: "", copy: "", affiliateLink: "", completed: false },
-  tiktok: { creativeUrl: "", copy: "", affiliateLink: "", completed: false },
-  googleDisplay: { creativeUrl: "", copy: "", affiliateLink: "", completed: false },
-  youtube: { creativeUrl: "", copy: "", affiliateLink: "", completed: false },
-  linkedin: { creativeUrl: "", copy: "", affiliateLink: "", completed: false },
-};
-
 export function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [partnerData, setPartnerData] = useState<PartnerData>({
-    companyName: "",
-    stakeholders: [],
-    channels: initialChannelData,
-  });
+  const [partnerData, setPartnerData] = useState<PartnerData>(initialPartnerData);
 
   const calculateProgress = () => {
     let completed = 0;
-    const total = 8; // Company name + 5 channels + at least 1 stakeholder + final review
+    const total = 10; // Company name + 5 channels + contacts + dates + final review
 
     if (partnerData.companyName) completed++;
+    if (partnerData.primaryContact.name && partnerData.primaryContact.email) completed++;
+    if (partnerData.targetLaunchDate) completed++;
     if (partnerData.stakeholders.length > 0) completed++;
     
     Object.values(partnerData.channels).forEach((channel) => {
