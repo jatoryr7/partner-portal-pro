@@ -1,13 +1,25 @@
 import { useState } from "react";
-import { ArrowLeft, ArrowRight, Check, AlertCircle, Info } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Info, Copy, Sparkles, FileText, Mail, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { PartnerData, ChannelData, ChannelAssets } from "@/components/OnboardingWizard";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { 
+  PartnerData, 
+  ChannelData,
+  NativeChannelAssets,
+  PaidSocialSearchAssets,
+  StandardChannelAssets,
+  AFFILIATE_PLATFORMS,
+  DRIVER_TYPES,
+  MEDIA_PLATFORMS 
+} from "@/types/partner";
+import { FileUploadZone } from "@/components/shared/FileUploadZone";
+import { MultiSelectTags } from "@/components/shared/MultiSelectTags";
+import { RichTextArea } from "@/components/shared/RichTextArea";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -18,78 +30,45 @@ interface StepCreativeAssetsProps {
   onBack: () => void;
 }
 
+type ChannelKey = keyof ChannelData;
+
 interface ChannelConfig {
-  key: keyof ChannelData;
+  key: ChannelKey;
   name: string;
-  icon: string;
-  color: string;
-  requiresLink: boolean;
-  requiresCopy: boolean;
-  specs: {
-    creative: string;
-    copy?: string;
-  };
+  icon: React.ReactNode;
+  description: string;
 }
 
 const channels: ChannelConfig[] = [
   {
-    key: "meta",
-    name: "Meta",
-    icon: "📘",
-    color: "bg-blue-500",
-    requiresLink: true,
-    requiresCopy: true,
-    specs: {
-      creative: "1080x1080px or 1080x1920px (Image/Video)",
-      copy: "Primary text: 125 chars, Headline: 40 chars",
-    },
+    key: "native",
+    name: "Native",
+    icon: <Sparkles className="h-4 w-4" />,
+    description: "Expert setup with affiliate platforms and driver types",
   },
   {
-    key: "tiktok",
-    name: "TikTok",
-    icon: "🎵",
-    color: "bg-pink-500",
-    requiresLink: true,
-    requiresCopy: true,
-    specs: {
-      creative: "1080x1920px (9:16 vertical video)",
-      copy: "Caption: 150 chars recommended",
-    },
+    key: "paidSocialSearch",
+    name: "Paid Social/Search",
+    icon: <Share2 className="h-4 w-4" />,
+    description: "Meta, Google, TikTok, YouTube, Podcast campaigns",
   },
   {
-    key: "googleDisplay",
-    name: "Google Display",
-    icon: "🔍",
-    color: "bg-green-500",
-    requiresLink: true,
-    requiresCopy: false,
-    specs: {
-      creative: "Multiple sizes: 300x250, 728x90, 160x600",
-    },
+    key: "media",
+    name: "Media",
+    icon: <FileText className="h-4 w-4" />,
+    description: "Display and media placement assets",
   },
   {
-    key: "youtube",
-    name: "YouTube",
-    icon: "▶️",
-    color: "bg-red-500",
-    requiresLink: false,
-    requiresCopy: true,
-    specs: {
-      creative: "1920x1080px (16:9 video)",
-      copy: "Title: 100 chars, Description: 5000 chars",
-    },
+    key: "newsletter",
+    name: "Newsletter",
+    icon: <Mail className="h-4 w-4" />,
+    description: "Email newsletter creative assets",
   },
   {
-    key: "linkedin",
-    name: "LinkedIn",
-    icon: "💼",
-    color: "bg-blue-700",
-    requiresLink: false,
-    requiresCopy: true,
-    specs: {
-      creative: "1200x627px or 1080x1080px",
-      copy: "Post text: 3000 chars, Headline: 70 chars",
-    },
+    key: "contentMarketing",
+    name: "Content Marketing",
+    icon: <FileText className="h-4 w-4" />,
+    description: "Blog, articles, and content pieces",
   },
 ];
 
@@ -99,86 +78,73 @@ export function StepCreativeAssets({
   onNext,
   onBack,
 }: StepCreativeAssetsProps) {
-  const [activeChannel, setActiveChannel] = useState<keyof ChannelData>("meta");
+  const [activeChannel, setActiveChannel] = useState<ChannelKey>("native");
   const { toast } = useToast();
 
-  const validateUrl = (url: string): boolean => {
-    if (!url) return true;
-    try {
-      const parsed = new URL(url);
-      return parsed.protocol === "https:";
-    } catch {
-      return false;
-    }
-  };
-
-  const updateChannel = (
-    channelKey: keyof ChannelData,
-    field: keyof ChannelAssets,
-    value: string | boolean
+  const updateChannel = <K extends ChannelKey>(
+    channelKey: K,
+    updates: Partial<ChannelData[K]>
   ) => {
     const updatedChannels = {
       ...data.channels,
       [channelKey]: {
         ...data.channels[channelKey],
-        [field]: value,
+        ...updates,
       },
     };
 
-    // Check if channel is completed
+    // Check if channel is completed based on type
     const channel = updatedChannels[channelKey];
-    const config = channels.find((c) => c.key === channelKey)!;
-    
-    const isCompleted =
-      channel.creativeUrl.trim() !== "" &&
-      (!config.requiresCopy || channel.copy.trim() !== "") &&
-      (!config.requiresLink || channel.affiliateLink.trim() !== "");
+    let isCompleted = false;
+
+    if (channelKey === "native") {
+      const native = channel as NativeChannelAssets;
+      isCompleted = native.affiliatePlatform !== "" && native.fileUrls.length > 0;
+    } else if (channelKey === "paidSocialSearch") {
+      const paid = channel as PaidSocialSearchAssets;
+      isCompleted = paid.mediaPlatform !== "" && paid.fileUrls.length > 0;
+    } else {
+      const standard = channel as StandardChannelAssets;
+      isCompleted = standard.fileUrls.length > 0;
+    }
 
     updatedChannels[channelKey].completed = isCompleted;
+    updatedChannels[channelKey].isDraft = false;
 
     onUpdate({ channels: updatedChannels });
   };
 
-  const handleNext = () => {
-    // Validate all URLs
-    for (const channel of channels) {
-      const channelData = data.channels[channel.key];
-      
-      if (channelData.creativeUrl && !validateUrl(channelData.creativeUrl)) {
-        toast({
-          title: "Invalid URL",
-          description: `${channel.name} creative URL must start with https://`,
-          variant: "destructive",
-        });
-        setActiveChannel(channel.key);
-        return;
-      }
-
-      if (channel.requiresLink && channelData.affiliateLink && !validateUrl(channelData.affiliateLink)) {
-        toast({
-          title: "Invalid URL",
-          description: `${channel.name} affiliate link must start with https://`,
-          variant: "destructive",
-        });
-        setActiveChannel(channel.key);
-        return;
-      }
+  const copyAffiliateLinkFromNative = () => {
+    const nativeLink = data.channels.native.affiliateLink;
+    if (nativeLink) {
+      updateChannel("paidSocialSearch", { 
+        affiliateLink: nativeLink,
+        copyFromNative: true 
+      });
+      toast({
+        title: "Link copied",
+        description: "Affiliate link copied from Native tab.",
+      });
+    } else {
+      toast({
+        title: "No link available",
+        description: "Please add an affiliate link in the Native tab first.",
+        variant: "destructive",
+      });
     }
-
-    onNext();
   };
 
   const completedCount = Object.values(data.channels).filter((c) => c.completed).length;
 
   return (
     <div className="max-w-4xl mx-auto">
-      <Card className="shadow-lg border-0 bg-card">
+      <Card className="shadow-lg border border-border bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-2xl">Creative Assets by Channel</CardTitle>
               <CardDescription className="text-base mt-2">
-                Upload your creative assets, copy, and affiliate links for each advertising channel.
+                Upload your creative assets and configure each advertising channel.
               </CardDescription>
             </div>
             <div className="text-right">
@@ -190,7 +156,7 @@ export function StepCreativeAssets({
         <CardContent>
           <Tabs
             value={activeChannel}
-            onValueChange={(v) => setActiveChannel(v as keyof ChannelData)}
+            onValueChange={(v) => setActiveChannel(v as ChannelKey)}
           >
             <TabsList className="grid grid-cols-5 mb-6 h-auto p-1">
               {channels.map((channel) => {
@@ -200,12 +166,12 @@ export function StepCreativeAssets({
                     key={channel.key}
                     value={channel.key}
                     className={cn(
-                      "flex flex-col gap-1 py-3 relative",
+                      "flex flex-col gap-1 py-3 px-2 relative",
                       isComplete && "bg-success-light"
                     )}
                   >
-                    <span className="text-xl">{channel.icon}</span>
-                    <span className="text-xs font-medium">{channel.name}</span>
+                    <span>{channel.icon}</span>
+                    <span className="text-xs font-medium leading-tight">{channel.name}</span>
                     {isComplete && (
                       <Check className="absolute top-1 right-1 h-3 w-3 text-success" />
                     )}
@@ -214,15 +180,52 @@ export function StepCreativeAssets({
               })}
             </TabsList>
 
-            {channels.map((channel) => (
-              <TabsContent key={channel.key} value={channel.key}>
-                <ChannelForm
-                  channel={channel}
-                  data={data.channels[channel.key]}
-                  onUpdate={(field, value) => updateChannel(channel.key, field, value)}
-                />
-              </TabsContent>
-            ))}
+            {/* Native Tab */}
+            <TabsContent value="native">
+              <NativeChannelForm
+                data={data.channels.native}
+                onUpdate={(updates) => updateChannel("native", updates)}
+              />
+            </TabsContent>
+
+            {/* Paid Social/Search Tab */}
+            <TabsContent value="paidSocialSearch">
+              <PaidSocialSearchForm
+                data={data.channels.paidSocialSearch}
+                onUpdate={(updates) => updateChannel("paidSocialSearch", updates)}
+                onCopyFromNative={copyAffiliateLinkFromNative}
+              />
+            </TabsContent>
+
+            {/* Media Tab */}
+            <TabsContent value="media">
+              <StandardChannelForm
+                data={data.channels.media}
+                onUpdate={(updates) => updateChannel("media", updates)}
+                title="Media"
+                description="Upload display and media placement assets"
+              />
+            </TabsContent>
+
+            {/* Newsletter Tab */}
+            <TabsContent value="newsletter">
+              <StandardChannelForm
+                data={data.channels.newsletter}
+                onUpdate={(updates) => updateChannel("newsletter", updates)}
+                title="Newsletter"
+                description="Upload email newsletter creative assets"
+              />
+            </TabsContent>
+
+            {/* Content Marketing Tab */}
+            <TabsContent value="contentMarketing">
+              <StandardChannelForm
+                data={data.channels.contentMarketing}
+                onUpdate={(updates) => updateChannel("contentMarketing", updates)}
+                title="Content Marketing"
+                description="Upload blog, article, and content piece assets"
+              />
+            </TabsContent>
           </Tabs>
 
           <div className="flex justify-between pt-6 border-t mt-6">
@@ -230,7 +233,7 @@ export function StepCreativeAssets({
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
-            <Button variant="gradient" onClick={handleNext}>
+            <Button variant="gradient" onClick={onNext}>
               Continue to Stakeholders
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
@@ -241,100 +244,252 @@ export function StepCreativeAssets({
   );
 }
 
-interface ChannelFormProps {
-  channel: ChannelConfig;
-  data: ChannelAssets;
-  onUpdate: (field: keyof ChannelAssets, value: string) => void;
+// Native Channel Form
+interface NativeChannelFormProps {
+  data: NativeChannelAssets;
+  onUpdate: (updates: Partial<NativeChannelAssets>) => void;
 }
 
-function ChannelForm({ channel, data, onUpdate }: ChannelFormProps) {
+function NativeChannelForm({ data, onUpdate }: NativeChannelFormProps) {
   return (
     <div className="space-y-6">
-      {/* Specs Banner */}
-      <div className="bg-healthcare-blue-light rounded-lg p-4 flex items-start gap-3">
+      <div className="bg-healthcare-blue-light rounded-lg p-4 flex items-start gap-3 border border-primary/20">
         <Info className="h-5 w-5 text-primary mt-0.5 shrink-0" />
         <div className="text-sm">
-          <p className="font-medium text-foreground">Recommended Specifications</p>
-          <p className="text-muted-foreground mt-1">{channel.specs.creative}</p>
-          {channel.specs.copy && (
-            <p className="text-muted-foreground">{channel.specs.copy}</p>
-          )}
-        </div>
-      </div>
-
-      {/* Creative URL */}
-      <div className="space-y-2">
-        <Label htmlFor={`${channel.key}-creative`} className="text-base font-medium flex items-center gap-2">
-          Creative Asset URL
-          <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id={`${channel.key}-creative`}
-          type="url"
-          placeholder="https://drive.google.com/... or https://dropbox.com/..."
-          value={data.creativeUrl}
-          onChange={(e) => onUpdate("creativeUrl", e.target.value)}
-          className="h-11"
-        />
-        <p className="text-sm text-muted-foreground">
-          Link to your image or video file (Google Drive, Dropbox, etc.)
-        </p>
-      </div>
-
-      {/* Copy */}
-      {channel.requiresCopy && (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor={`${channel.key}-copy`} className="text-base font-medium">
-              Ad Copy
-              <span className="text-destructive ml-1">*</span>
-            </Label>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AlertCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p>
-                    <strong>Healthcare Compliance:</strong> Ensure copy does not make
-                    unsubstantiated medical claims. Avoid phrases like "cures" or "guaranteed
-                    results."
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <Textarea
-            id={`${channel.key}-copy`}
-            placeholder="Enter your ad copy here..."
-            value={data.copy}
-            onChange={(e) => onUpdate("copy", e.target.value)}
-            rows={4}
-            className="resize-none"
-          />
-        </div>
-      )}
-
-      {/* Affiliate Link */}
-      {channel.requiresLink && (
-        <div className="space-y-2">
-          <Label htmlFor={`${channel.key}-link`} className="text-base font-medium flex items-center gap-2">
-            Affiliate Link
-            <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id={`${channel.key}-link`}
-            type="url"
-            placeholder="https://yoursite.com/affiliate?ref=partner"
-            value={data.affiliateLink}
-            onChange={(e) => onUpdate("affiliateLink", e.target.value)}
-            className="h-11"
-          />
-          <p className="text-sm text-muted-foreground">
-            Your tracked affiliate or UTM link for this campaign
+          <p className="font-medium text-foreground">Expert Setup</p>
+          <p className="text-muted-foreground mt-1">
+            Configure your native advertising with affiliate platform integration and driver types.
           </p>
         </div>
-      )}
+      </div>
+
+      {/* Affiliate Platform Dropdown */}
+      <div className="space-y-2">
+        <Label className="text-base font-medium">
+          Affiliate Platform <span className="text-destructive">*</span>
+        </Label>
+        <Select
+          value={data.affiliatePlatform}
+          onValueChange={(value) => onUpdate({ affiliatePlatform: value })}
+        >
+          <SelectTrigger className="h-11">
+            <SelectValue placeholder="Select affiliate platform" />
+          </SelectTrigger>
+          <SelectContent>
+            {AFFILIATE_PLATFORMS.map((platform) => (
+              <SelectItem key={platform} value={platform}>
+                {platform}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Driver Types Multi-Select */}
+      <div className="space-y-2">
+        <Label className="text-base font-medium">Driver Types</Label>
+        <MultiSelectTags
+          options={DRIVER_TYPES}
+          selected={data.driverTypes}
+          onChange={(selected) => onUpdate({ driverTypes: selected })}
+        />
+      </div>
+
+      {/* Promo Copy */}
+      <div className="space-y-2">
+        <Label className="text-base font-medium">Promo Copy</Label>
+        <RichTextArea
+          value={data.promoCopy}
+          onChange={(value) => onUpdate({ promoCopy: value })}
+          placeholder="Enter your promotional copy here..."
+          maxLength={3000}
+        />
+      </div>
+
+      {/* Affiliate Link */}
+      <div className="space-y-2">
+        <Label className="text-base font-medium">Affiliate Link</Label>
+        <Input
+          type="url"
+          placeholder="https://yoursite.com/affiliate?ref=partner"
+          value={data.affiliateLink}
+          onChange={(e) => onUpdate({ affiliateLink: e.target.value })}
+          className="h-11"
+        />
+      </div>
+
+      {/* File Upload */}
+      <div className="space-y-2">
+        <Label className="text-base font-medium">
+          Bulk Upload (up to 10 files) <span className="text-destructive">*</span>
+        </Label>
+        <FileUploadZone
+          files={data.fileUrls}
+          onFilesChange={(files) => onUpdate({ fileUrls: files })}
+          maxFiles={10}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Paid Social/Search Form
+interface PaidSocialSearchFormProps {
+  data: PaidSocialSearchAssets;
+  onUpdate: (updates: Partial<PaidSocialSearchAssets>) => void;
+  onCopyFromNative: () => void;
+}
+
+function PaidSocialSearchForm({ data, onUpdate, onCopyFromNative }: PaidSocialSearchFormProps) {
+  return (
+    <div className="space-y-6">
+      <div className="bg-healthcare-blue-light rounded-lg p-4 flex items-start gap-3 border border-primary/20">
+        <Info className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+        <div className="text-sm">
+          <p className="font-medium text-foreground">Paid Social & Search</p>
+          <p className="text-muted-foreground mt-1">
+            Configure your paid advertising campaigns across major platforms.
+          </p>
+        </div>
+      </div>
+
+      {/* Media Platform Dropdown */}
+      <div className="space-y-2">
+        <Label className="text-base font-medium">
+          Media Platform <span className="text-destructive">*</span>
+        </Label>
+        <Select
+          value={data.mediaPlatform}
+          onValueChange={(value) => onUpdate({ mediaPlatform: value })}
+        >
+          <SelectTrigger className="h-11">
+            <SelectValue placeholder="Select media platform" />
+          </SelectTrigger>
+          <SelectContent>
+            {MEDIA_PLATFORMS.map((platform) => (
+              <SelectItem key={platform} value={platform}>
+                {platform}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Copy Affiliate Link Toggle */}
+      <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+        <div>
+          <Label className="text-base font-medium">Copy Affiliate Link from Native</Label>
+          <p className="text-sm text-muted-foreground mt-1">
+            Use the same affiliate link from your Native tab
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Switch
+            checked={data.copyFromNative}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                onCopyFromNative();
+              } else {
+                onUpdate({ copyFromNative: false });
+              }
+            }}
+          />
+          <Copy className="h-4 w-4 text-muted-foreground" />
+        </div>
+      </div>
+
+      {/* Affiliate Link */}
+      <div className="space-y-2">
+        <Label className="text-base font-medium">Affiliate Link</Label>
+        <Input
+          type="url"
+          placeholder="https://yoursite.com/affiliate?ref=partner"
+          value={data.affiliateLink}
+          onChange={(e) => onUpdate({ affiliateLink: e.target.value, copyFromNative: false })}
+          className="h-11"
+        />
+      </div>
+
+      {/* Ad Copy */}
+      <div className="space-y-2">
+        <Label className="text-base font-medium">Ad Copy</Label>
+        <RichTextArea
+          value={data.copy}
+          onChange={(value) => onUpdate({ copy: value })}
+          placeholder="Enter your ad copy here..."
+          maxLength={5000}
+        />
+      </div>
+
+      {/* File Upload */}
+      <div className="space-y-2">
+        <Label className="text-base font-medium">
+          Upload Files (up to 10) <span className="text-destructive">*</span>
+        </Label>
+        <FileUploadZone
+          files={data.fileUrls}
+          onFilesChange={(files) => onUpdate({ fileUrls: files })}
+          maxFiles={10}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Standard Channel Form (Media, Newsletter, Content Marketing)
+interface StandardChannelFormProps {
+  data: StandardChannelAssets;
+  onUpdate: (updates: Partial<StandardChannelAssets>) => void;
+  title: string;
+  description: string;
+}
+
+function StandardChannelForm({ data, onUpdate, title, description }: StandardChannelFormProps) {
+  return (
+    <div className="space-y-6">
+      <div className="bg-healthcare-blue-light rounded-lg p-4 flex items-start gap-3 border border-primary/20">
+        <Info className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+        <div className="text-sm">
+          <p className="font-medium text-foreground">{title}</p>
+          <p className="text-muted-foreground mt-1">{description}</p>
+        </div>
+      </div>
+
+      {/* Context/Placement Instructions */}
+      <div className="space-y-2">
+        <Label className="text-base font-medium">Context/Placement Instructions</Label>
+        <RichTextArea
+          value={data.contextInstructions}
+          onChange={(value) => onUpdate({ contextInstructions: value })}
+          placeholder="Describe where these assets should live (e.g., homepage banner, sidebar ad, email header)..."
+          maxLength={2000}
+          rows={4}
+        />
+      </div>
+
+      {/* Affiliate Link */}
+      <div className="space-y-2">
+        <Label className="text-base font-medium">Affiliate Link</Label>
+        <Input
+          type="url"
+          placeholder="https://yoursite.com/affiliate?ref=partner"
+          value={data.affiliateLink}
+          onChange={(e) => onUpdate({ affiliateLink: e.target.value })}
+          className="h-11"
+        />
+      </div>
+
+      {/* File Upload */}
+      <div className="space-y-2">
+        <Label className="text-base font-medium">
+          Upload Files (up to 10) <span className="text-destructive">*</span>
+        </Label>
+        <FileUploadZone
+          files={data.fileUrls}
+          onFilesChange={(files) => onUpdate({ fileUrls: files })}
+          maxFiles={10}
+        />
+      </div>
     </div>
   );
 }

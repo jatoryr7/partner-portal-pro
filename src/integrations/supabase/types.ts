@@ -17,35 +17,56 @@ export type Database = {
       creative_assets: {
         Row: {
           affiliate_link: string | null
+          affiliate_platform: string | null
           asset_url: string | null
           channel: string
+          context_instructions: string | null
+          copy_from_native: boolean | null
           copy_text: string | null
           created_at: string
+          driver_types: string[] | null
+          file_urls: string[] | null
           id: string
           is_complete: boolean
+          is_draft: boolean | null
           partner_id: string
+          promo_copy: string | null
           updated_at: string
         }
         Insert: {
           affiliate_link?: string | null
+          affiliate_platform?: string | null
           asset_url?: string | null
           channel: string
+          context_instructions?: string | null
+          copy_from_native?: boolean | null
           copy_text?: string | null
           created_at?: string
+          driver_types?: string[] | null
+          file_urls?: string[] | null
           id?: string
           is_complete?: boolean
+          is_draft?: boolean | null
           partner_id: string
+          promo_copy?: string | null
           updated_at?: string
         }
         Update: {
           affiliate_link?: string | null
+          affiliate_platform?: string | null
           asset_url?: string | null
           channel?: string
+          context_instructions?: string | null
+          copy_from_native?: boolean | null
           copy_text?: string | null
           created_at?: string
+          driver_types?: string[] | null
+          file_urls?: string[] | null
           id?: string
           is_complete?: boolean
+          is_draft?: boolean | null
           partner_id?: string
+          promo_copy?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -63,6 +84,12 @@ export type Database = {
           company_name: string
           created_at: string
           id: string
+          primary_contact_email: string | null
+          primary_contact_name: string | null
+          secondary_contact_email: string | null
+          secondary_contact_name: string | null
+          submission_date: string
+          target_launch_date: string | null
           updated_at: string
           user_id: string
         }
@@ -70,6 +97,12 @@ export type Database = {
           company_name: string
           created_at?: string
           id?: string
+          primary_contact_email?: string | null
+          primary_contact_name?: string | null
+          secondary_contact_email?: string | null
+          secondary_contact_name?: string | null
+          submission_date?: string
+          target_launch_date?: string | null
           updated_at?: string
           user_id: string
         }
@@ -77,6 +110,12 @@ export type Database = {
           company_name?: string
           created_at?: string
           id?: string
+          primary_contact_email?: string | null
+          primary_contact_name?: string | null
+          secondary_contact_email?: string | null
+          secondary_contact_name?: string | null
+          submission_date?: string
+          target_launch_date?: string | null
           updated_at?: string
           user_id?: string
         }

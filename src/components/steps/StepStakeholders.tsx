@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PartnerData, Stakeholder } from "@/components/OnboardingWizard";
+import { PartnerData, Stakeholder } from "@/types/partner";
 import { useToast } from "@/hooks/use-toast";
 
 interface StepStakeholdersProps {
@@ -97,7 +97,7 @@ export function StepStakeholders({
 
   return (
     <div className="max-w-3xl mx-auto">
-      <Card className="shadow-lg border-0 bg-card">
+      <Card className="shadow-lg border border-border bg-card">
         <CardHeader>
           <div className="flex items-center gap-4">
             <div className="h-12 w-12 rounded-xl bg-success-light flex items-center justify-center">
@@ -115,7 +115,7 @@ export function StepStakeholders({
           {stakeholders.map((stakeholder, index) => (
             <div
               key={stakeholder.id}
-              className="p-6 bg-secondary/30 rounded-xl space-y-4 relative"
+              className="p-6 bg-secondary/30 rounded-xl space-y-4 relative border border-border"
             >
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold text-foreground">
