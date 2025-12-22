@@ -14,6 +14,85 @@ export type Database = {
   }
   public: {
     Tables: {
+      asset_feedback: {
+        Row: {
+          asset_id: string
+          comments: string | null
+          created_at: string
+          id: string
+          reviewer_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          asset_id: string
+          comments?: string | null
+          created_at?: string
+          id?: string
+          reviewer_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          asset_id?: string
+          comments?: string | null
+          created_at?: string
+          id?: string
+          reviewer_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_feedback_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "creative_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_status: {
+        Row: {
+          campaign_conclusion_date: string | null
+          created_at: string
+          id: string
+          next_meeting_date: string | null
+          partner_id: string
+          priority: string
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          campaign_conclusion_date?: string | null
+          created_at?: string
+          id?: string
+          next_meeting_date?: string | null
+          partner_id: string
+          priority?: string
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          campaign_conclusion_date?: string | null
+          created_at?: string
+          id?: string
+          next_meeting_date?: string | null
+          partner_id?: string
+          priority?: string
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_status_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: true
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creative_assets: {
         Row: {
           affiliate_link: string | null
@@ -121,6 +200,33 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       stakeholders: {
         Row: {
           created_at: string
@@ -159,15 +265,42 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "partner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -294,6 +427,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "partner"],
+    },
   },
 } as const
