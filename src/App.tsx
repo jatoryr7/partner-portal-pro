@@ -36,7 +36,9 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Public routes */}
+              {/* Public auth routes */}
+              <Route path="/auth/admin" element={<Auth />} />
+              <Route path="/auth/partner" element={<Auth />} />
               <Route path="/auth" element={<Auth />} />
               
               {/* Role-based router */}
