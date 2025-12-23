@@ -12,6 +12,10 @@ import { PartnerData, initialPartnerData } from "@/types/partner";
 // Re-export types for backward compatibility
 export { type PartnerData, type Stakeholder, type ChannelData, type ChannelKey } from "@/types/partner";
 
+interface OnboardingWizardProps {
+  onComplete?: () => void;
+}
+
 const steps = [
   { id: 1, title: "Company Info", icon: Building2 },
   { id: 2, title: "Channels", icon: Package },
@@ -20,7 +24,7 @@ const steps = [
   { id: 5, title: "Review & Book", icon: Calendar },
 ];
 
-export function OnboardingWizard() {
+export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [partnerData, setPartnerData] = useState<PartnerData>(initialPartnerData);
 
@@ -181,6 +185,7 @@ export function OnboardingWizard() {
               <StepSummary
                 data={partnerData}
                 onBack={handleBack}
+                onComplete={onComplete}
               />
             )}
           </motion.div>
