@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { OnboardingWizard } from '@/components/OnboardingWizard';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, Plus, FileText, AlertCircle } from 'lucide-react';
+import { LogOut, Plus, FileText, AlertCircle, ArrowLeft, Eye } from 'lucide-react';
 import { CampaignStage, CampaignPriority } from '@/types/campaign';
 
 interface PartnerSubmission {
@@ -29,9 +29,11 @@ export default function PartnerDashboard() {
   const [submissions, setSubmissions] = useState<PartnerSubmission[]>([]);
   const [showWizard, setShowWizard] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { user, signOut } = useAuth();
+  const { user, role, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isPreviewMode = searchParams.get('preview') === 'true' && role === 'admin';
 
   useEffect(() => {
     fetchSubmissions();
@@ -116,12 +118,32 @@ export default function PartnerDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Admin Preview Banner */}
+      {isPreviewMode && (
+        <div className="bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Eye className="w-4 h-4" />
+            <span className="text-sm font-medium">Admin Preview Mode - Viewing as Partner</span>
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => navigate('/admin')}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Return to Dashboard
+          </Button>
+        </div>
+      )}
+      
       <header className="h-14 border-b border-border flex items-center justify-between px-6 bg-card">
         <h1 className="font-semibold text-foreground">Partner Portal</h1>
-        <Button variant="ghost" onClick={signOut}>
-          <LogOut className="w-4 h-4 mr-2" />
-          Sign Out
-        </Button>
+        {!isPreviewMode && (
+          <Button variant="ghost" onClick={signOut}>
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </Button>
+        )}
       </header>
 
       <main className="container max-w-5xl py-8">
