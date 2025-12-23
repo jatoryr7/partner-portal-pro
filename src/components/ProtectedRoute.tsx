@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
@@ -9,6 +9,8 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const { user, role, loading } = useAuth();
+  const [searchParams] = useSearchParams();
+  const isPreviewMode = searchParams.get('preview') === 'true';
 
   if (loading) {
     return (
@@ -20,6 +22,11 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Allow admins to preview partner portal
+  if (requiredRole === 'partner' && role === 'admin' && isPreviewMode) {
+    return <>{children}</>;
   }
 
   if (requiredRole && role !== requiredRole) {
