@@ -111,7 +111,7 @@ export default function PartnerDashboard() {
             Cancel
           </Button>
         </header>
-        <OnboardingWizard />
+        <OnboardingWizard onComplete={handleWizardComplete} />
       </div>
     );
   }

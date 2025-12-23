@@ -1,39 +1,161 @@
+import { useState } from "react";
 import { format } from "date-fns";
-import { ArrowLeft, Check, ExternalLink, Calendar, Building2, Users, Palette, FileText, User, Clock, Sparkles, Share2, Mail } from "lucide-react";
+import { ArrowLeft, Check, ExternalLink, Calendar, Building2, Users, Palette, FileText, User, Clock, Sparkles, Share2, Mail, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { PartnerData, ChannelData, NativeChannelAssets, PaidSocialSearchAssets, StandardChannelAssets } from "@/types/partner";
+import { PartnerData, ChannelData, NativeChannelAssets, PaidSocialSearchAssets, StandardChannelAssets, ChannelKey } from "@/types/partner";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StepSummaryProps {
   data: PartnerData;
   onBack: () => void;
+  onComplete?: () => void;
 }
 
-type ChannelKey = keyof ChannelData;
-
-const channelConfig: Record<ChannelKey, { name: string; icon: React.ReactNode }> = {
-  native: { name: "Native", icon: <Sparkles className="h-4 w-4" /> },
-  paidSocialSearch: { name: "Paid Social/Search", icon: <Share2 className="h-4 w-4" /> },
-  media: { name: "Media", icon: <FileText className="h-4 w-4" /> },
-  newsletter: { name: "Newsletter", icon: <Mail className="h-4 w-4" /> },
-  contentMarketing: { name: "Content Marketing", icon: <FileText className="h-4 w-4" /> },
+const channelConfig: Record<ChannelKey, { name: string; icon: React.ReactNode; dbKey: string }> = {
+  native: { name: "Native", icon: <Sparkles className="h-4 w-4" />, dbKey: "native" },
+  paidSocialSearch: { name: "Paid Social/Search", icon: <Share2 className="h-4 w-4" />, dbKey: "paid_social_search" },
+  media: { name: "Media", icon: <FileText className="h-4 w-4" />, dbKey: "media" },
+  newsletter: { name: "Newsletter", icon: <Mail className="h-4 w-4" />, dbKey: "newsletter" },
+  contentMarketing: { name: "Content Marketing", icon: <FileText className="h-4 w-4" />, dbKey: "content_marketing" },
 };
 
-export function StepSummary({ data, onBack }: StepSummaryProps) {
+export function StepSummary({ data, onBack, onComplete }: StepSummaryProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const completedChannels = Object.entries(data.channels).filter(
     ([_, channel]) => channel.completed
   );
 
-  const handleSubmit = () => {
-    toast({
-      title: "Submission saved!",
-      description: "Your creative assets have been submitted successfully. Book a sync meeting below.",
-    });
+  const handleSubmit = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to submit your assets.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // 1. Create the partner record
+      const { data: partner, error: partnerError } = await supabase
+        .from("partners")
+        .insert({
+          user_id: user.id,
+          company_name: data.companyName,
+          submission_date: format(data.submissionDate, "yyyy-MM-dd"),
+          target_launch_date: data.targetLaunchDate ? format(data.targetLaunchDate, "yyyy-MM-dd") : null,
+          primary_contact_name: data.primaryContact.name,
+          primary_contact_email: data.primaryContact.email,
+          secondary_contact_name: data.secondaryContact?.name || null,
+          secondary_contact_email: data.secondaryContact?.email || null,
+        })
+        .select()
+        .single();
+
+      if (partnerError) throw partnerError;
+
+      // 2. Create campaign_status record
+      const { error: statusError } = await supabase
+        .from("campaign_status")
+        .insert({
+          partner_id: partner.id,
+          stage: "asset_collection",
+          priority: "medium",
+        });
+
+      if (statusError) throw statusError;
+
+      // 3. Create creative_assets for each selected channel
+      const channelInserts = data.selectedChannels.map((channelKey) => {
+        const channel = data.channels[channelKey];
+        const config = channelConfig[channelKey];
+        
+        const baseAsset = {
+          partner_id: partner.id,
+          channel: config.dbKey,
+          is_complete: channel.completed,
+          is_draft: channel.isDraft,
+          file_urls: channel.fileUrls,
+        };
+
+        if (channelKey === "native") {
+          const native = channel as NativeChannelAssets;
+          return {
+            ...baseAsset,
+            affiliate_platform: native.affiliatePlatform || null,
+            driver_types: native.driverTypes,
+            promo_copy: native.promoCopy || null,
+            affiliate_link: native.affiliateLink || null,
+          };
+        } else if (channelKey === "paidSocialSearch") {
+          const paid = channel as PaidSocialSearchAssets;
+          return {
+            ...baseAsset,
+            copy_from_native: paid.copyFromNative,
+            affiliate_link: paid.affiliateLink || null,
+            copy_text: paid.copy || null,
+          };
+        } else {
+          const standard = channel as StandardChannelAssets;
+          return {
+            ...baseAsset,
+            context_instructions: standard.contextInstructions || null,
+            affiliate_link: standard.affiliateLink || null,
+          };
+        }
+      });
+
+      if (channelInserts.length > 0) {
+        const { error: assetsError } = await supabase
+          .from("creative_assets")
+          .insert(channelInserts);
+
+        if (assetsError) throw assetsError;
+      }
+
+      // 4. Create stakeholders
+      if (data.stakeholders.length > 0) {
+        const stakeholderInserts = data.stakeholders.map((stakeholder) => ({
+          partner_id: partner.id,
+          name: stakeholder.name,
+          email: stakeholder.email,
+          phone: stakeholder.phone || null,
+          role: stakeholder.role || null,
+        }));
+
+        const { error: stakeholdersError } = await supabase
+          .from("stakeholders")
+          .insert(stakeholderInserts);
+
+        if (stakeholdersError) throw stakeholdersError;
+      }
+
+      toast({
+        title: "Submission saved!",
+        description: "Your creative assets have been submitted successfully.",
+      });
+
+      onComplete?.();
+    } catch (error: any) {
+      console.error("Submission error:", error);
+      toast({
+        title: "Submission failed",
+        description: error.message || "An error occurred while saving your submission.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderChannelDetails = (key: ChannelKey, channel: ChannelData[ChannelKey]) => {
@@ -300,9 +422,18 @@ export function StepSummary({ data, onBack }: StepSummaryProps) {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Edit
         </Button>
-        <Button variant="gradient" size="lg" onClick={handleSubmit}>
-          <Check className="h-5 w-5 mr-2" />
-          Submit All Assets
+        <Button variant="gradient" size="lg" onClick={handleSubmit} disabled={isSubmitting}>
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+              Submitting...
+            </>
+          ) : (
+            <>
+              <Check className="h-5 w-5 mr-2" />
+              Submit All Assets
+            </>
+          )}
         </Button>
       </div>
     </div>
