@@ -7,7 +7,7 @@ import {
   Mail, 
   PenTool,
   LogOut,
-  Settings
+  Users
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -75,6 +75,18 @@ export function AdminSidebar() {
                   >
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     {!collapsed && <span>Dashboard</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink 
+                    to="/admin/stakeholders" 
+                    className="hover:bg-sidebar-accent/50" 
+                    activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    {!collapsed && <span>Stakeholders</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
