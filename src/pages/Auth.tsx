@@ -72,7 +72,8 @@ export default function Auth() {
         title: 'Welcome back!',
         description: 'You have successfully signed in.',
       });
-      navigate('/');
+      // Redirect based on login mode, not database role
+      navigate(isAdminMode ? '/admin' : '/partner');
     }
     setIsLoading(false);
   };
@@ -99,7 +100,8 @@ export default function Auth() {
         title: 'Account created!',
         description: 'Welcome to the Partner Portal.',
       });
-      navigate('/');
+      // Partners always go to partner dashboard after signup
+      navigate('/partner');
     }
     setIsLoading(false);
   };
