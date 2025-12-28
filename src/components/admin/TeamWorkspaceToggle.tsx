@@ -6,9 +6,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Users, ChevronDown, Megaphone, Scale, Palette, Briefcase } from 'lucide-react';
+import { Users, ChevronDown, Megaphone, Scale, Palette, Briefcase, Settings2 } from 'lucide-react';
 
-export type TeamWorkspace = 'marketing' | 'legal' | 'creative' | 'business_dev';
+export type TeamWorkspace = 'marketing' | 'legal' | 'creative' | 'business_dev' | 'operations';
 
 interface TeamWorkspaceToggleProps {
   activeWorkspace: TeamWorkspace;
@@ -35,6 +35,11 @@ const workspaceConfig: Record<TeamWorkspace, { label: string; icon: React.Elemen
     label: 'Business Development',
     icon: Briefcase,
     color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+  },
+  operations: {
+    label: 'Operations',
+    icon: Settings2,
+    color: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
   },
 };
 
