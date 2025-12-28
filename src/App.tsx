@@ -27,6 +27,8 @@ import MediaView from "./pages/admin/MediaView";
 import NewsletterView from "./pages/admin/NewsletterView";
 import ContentMarketingView from "./pages/admin/ContentMarketingView";
 import AdminSettings from "./pages/admin/AdminSettings";
+import ExternalAccessHub from "./components/admin/ExternalAccessHub";
+
 // Partner pages
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
 
@@ -75,6 +77,7 @@ const App = () => (
                 <Route path="newsletter" element={<NewsletterView />} />
                 <Route path="content-marketing" element={<ContentMarketingView />} />
                 <Route path="settings" element={<AdminSettings />} />
+                <Route path="external-hub" element={<ExternalAccessHub />} />
               </Route>
               
               <Route path="*" element={<NotFound />} />

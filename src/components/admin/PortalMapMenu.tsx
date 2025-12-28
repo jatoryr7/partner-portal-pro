@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   LayoutGrid, X, ChevronRight, BarChart3, DollarSign, 
-  Microscope, Megaphone, ShieldCheck
+  Microscope, Megaphone, Globe
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -53,6 +53,15 @@ const navMap: NavSection[] = [
     links: [
       { name: "Monthly Billables", path: "/admin/queue", workspace: "operations" },
       { name: "Network API Status", path: "/admin/queue", workspace: "operations" }
+    ]
+  },
+  {
+    category: "External Gateways",
+    icon: <Globe className="w-5 h-5" />,
+    links: [
+      { name: "External Access Hub", path: "/admin/external-hub" },
+      { name: "Brand Integrity Portal", path: "/brand-application" },
+      { name: "Partner Creative Portal", path: "/auth" }
     ]
   }
 ];
