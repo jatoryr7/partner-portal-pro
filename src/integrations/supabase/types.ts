@@ -222,6 +222,71 @@ export type Database = {
           },
         ]
       }
+      content_placements: {
+        Row: {
+          created_at: string
+          created_by: string
+          deal_id: string | null
+          description: string | null
+          dimensions: string | null
+          end_date: string | null
+          id: string
+          name: string
+          notes: string | null
+          placement_type: string
+          property: string
+          rate: number | null
+          rate_type: string | null
+          scheduled_date: string | null
+          status: Database["public"]["Enums"]["placement_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          deal_id?: string | null
+          description?: string | null
+          dimensions?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          placement_type: string
+          property?: string
+          rate?: number | null
+          rate_type?: string | null
+          scheduled_date?: string | null
+          status?: Database["public"]["Enums"]["placement_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          deal_id?: string | null
+          description?: string | null
+          dimensions?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          placement_type?: string
+          property?: string
+          rate?: number | null
+          rate_type?: string | null
+          scheduled_date?: string | null
+          status?: Database["public"]["Enums"]["placement_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_placements_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creative_assets: {
         Row: {
           affiliate_link: string | null
@@ -728,6 +793,7 @@ export type Database = {
         | "contract_sent"
         | "closed_won"
         | "closed_lost"
+      placement_status: "available" | "pitched" | "booked" | "upcoming"
       po_status:
         | "draft"
         | "submitted"
@@ -874,6 +940,7 @@ export const Constants = {
         "closed_won",
         "closed_lost",
       ],
+      placement_status: ["available", "pitched", "booked", "upcoming"],
       po_status: [
         "draft",
         "submitted",

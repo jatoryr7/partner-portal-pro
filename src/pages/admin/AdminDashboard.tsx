@@ -22,6 +22,7 @@ import { CreativeDashboard } from '@/components/admin/workspace/CreativeDashboar
 import { BusinessDevDashboard } from '@/components/admin/workspace/BusinessDevDashboard';
 import { OperationsDashboard } from '@/components/admin/workspace/OperationsDashboard';
 import { PartnerManagementDashboard } from '@/components/admin/workspace/PartnerManagementDashboard';
+import { ContentInventoryDashboard } from '@/components/admin/workspace/ContentInventoryDashboard';
 
 interface ChannelStats {
   channel: string;
@@ -98,6 +99,7 @@ export default function AdminDashboard() {
       {activeWorkspace === 'business_dev' && <BusinessDevDashboard />}
       {activeWorkspace === 'operations' && <OperationsDashboard />}
       {activeWorkspace === 'partner_mgmt' && <PartnerManagementDashboard />}
+      {activeWorkspace === 'content_inventory' && <ContentInventoryDashboard />}
 
       {/* Original Summary Cards - always visible */}
       <div className="pt-6 border-t">
