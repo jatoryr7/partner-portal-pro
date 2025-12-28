@@ -11,7 +11,8 @@ import {
   Kanban,
   ArrowLeftRight,
   UserCog,
-  Building2
+  Building2,
+  Briefcase
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -133,6 +134,18 @@ export function AdminSidebar() {
                   >
                     <Building2 className="mr-2 h-4 w-4" />
                     {!collapsed && <span>Brand Directory</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink 
+                    to="/admin/deals" 
+                    className="hover:bg-sidebar-accent/50" 
+                    activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+                  >
+                    <Briefcase className="mr-2 h-4 w-4" />
+                    {!collapsed && <span>Deals CRM</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>

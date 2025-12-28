@@ -93,6 +93,56 @@ export type Database = {
           },
         ]
       }
+      campaign_deals: {
+        Row: {
+          assigned_internal_manager: string | null
+          contract_status: Database["public"]["Enums"]["contract_status"]
+          created_at: string
+          deal_name: string
+          deal_value: number | null
+          end_date: string | null
+          id: string
+          notes: string | null
+          partner_id: string
+          start_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_internal_manager?: string | null
+          contract_status?: Database["public"]["Enums"]["contract_status"]
+          created_at?: string
+          deal_name: string
+          deal_value?: number | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          partner_id: string
+          start_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_internal_manager?: string | null
+          contract_status?: Database["public"]["Enums"]["contract_status"]
+          created_at?: string
+          deal_name?: string
+          deal_value?: number | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          partner_id?: string
+          start_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_deals_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_status: {
         Row: {
           campaign_conclusion_date: string | null
@@ -144,6 +194,7 @@ export type Database = {
           copy_from_native: boolean | null
           copy_text: string | null
           created_at: string
+          deal_id: string | null
           driver_types: string[] | null
           file_urls: string[] | null
           id: string
@@ -162,6 +213,7 @@ export type Database = {
           copy_from_native?: boolean | null
           copy_text?: string | null
           created_at?: string
+          deal_id?: string | null
           driver_types?: string[] | null
           file_urls?: string[] | null
           id?: string
@@ -180,6 +232,7 @@ export type Database = {
           copy_from_native?: boolean | null
           copy_text?: string | null
           created_at?: string
+          deal_id?: string | null
           driver_types?: string[] | null
           file_urls?: string[] | null
           id?: string
@@ -190,6 +243,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "creative_assets_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_deals"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "creative_assets_partner_id_fkey"
             columns: ["partner_id"]
@@ -342,6 +402,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "partner"
+      contract_status: "draft" | "signed" | "expired"
       review_status: "pending" | "approved" | "revision_requested"
     }
     CompositeTypes: {
@@ -471,6 +532,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "partner"],
+      contract_status: ["draft", "signed", "expired"],
       review_status: ["pending", "approved", "revision_requested"],
     },
   },
