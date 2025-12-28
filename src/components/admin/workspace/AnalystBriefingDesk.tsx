@@ -12,6 +12,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RichTextArea } from '@/components/shared/RichTextArea';
+import { MetricTooltip } from '@/components/shared/MetricTooltip';
 import { toast } from '@/hooks/use-toast';
 import { 
   Plus, 
@@ -28,6 +29,7 @@ import {
   Link as LinkIcon
 } from 'lucide-react';
 import { format, parseISO, startOfWeek, isWithinInterval, subDays } from 'date-fns';
+import { PRIORITY_TAGS, AFFILIATE_PLATFORMS } from '@/config/inputOptions';
 
 interface ExternalResource {
   title: string;
@@ -58,9 +60,10 @@ interface MetricCardProps {
   value: number;
   previousValue?: number;
   format?: 'currency' | 'percent' | 'number';
+  metricType?: 'roas' | 'cac' | 'revenue' | 'spend' | 'conversions' | 'inventory';
 }
 
-function MetricCard({ label, value, previousValue, format: formatType = 'number' }: MetricCardProps) {
+function MetricCard({ label, value, previousValue, format: formatType = 'number', metricType }: MetricCardProps) {
   const diff = previousValue !== undefined ? ((value - previousValue) / (previousValue || 1)) * 100 : null;
   
   const formatValue = (val: number) => {
@@ -74,13 +77,21 @@ function MetricCard({ label, value, previousValue, format: formatType = 'number'
     }
   };
 
+  const labelContent = metricType ? (
+    <MetricTooltip metric={metricType}>
+      <span>{label}</span>
+    </MetricTooltip>
+  ) : (
+    <span>{label}</span>
+  );
+
   return (
-    <div className="bg-muted/50 rounded-lg p-3 space-y-1">
-      <p className="text-xs text-muted-foreground">{label}</p>
+    <div className="bg-surface rounded-none border border-border p-3 space-y-1">
+      <p className="text-xs text-muted-foreground">{labelContent}</p>
       <div className="flex items-center gap-2">
         <span className="text-lg font-semibold">{formatValue(value)}</span>
         {diff !== null && (
-          <div className={`flex items-center text-xs ${diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
+          <div className={`flex items-center text-xs ${diff > 0 ? 'text-success' : diff < 0 ? 'text-critical' : 'text-muted-foreground'}`}>
             {diff > 0 ? <TrendingUp className="h-3 w-3" /> : diff < 0 ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
             <span>{Math.abs(diff).toFixed(1)}%</span>
           </div>
@@ -91,13 +102,15 @@ function MetricCard({ label, value, previousValue, format: formatType = 'number'
 }
 
 function PriorityBadge({ tag }: { tag: string }) {
+  const priorityConfig = PRIORITY_TAGS.find(p => p.value === tag);
+  
   switch (tag) {
     case 'critical':
-      return <Badge variant="destructive" className="gap-1"><AlertTriangle className="h-3 w-3" />Critical</Badge>;
+      return <Badge variant="critical" className="gap-1"><AlertTriangle className="h-3 w-3" />{priorityConfig?.label || 'Critical'}</Badge>;
     case 'action_required':
-      return <Badge variant="default" className="gap-1 bg-amber-500"><Bell className="h-3 w-3" />Action Required</Badge>;
+      return <Badge variant="warning" className="gap-1"><Bell className="h-3 w-3" />{priorityConfig?.label || 'Action Required'}</Badge>;
     default:
-      return <Badge variant="secondary" className="gap-1"><Info className="h-3 w-3" />FYI</Badge>;
+      return <Badge variant="fyi" className="gap-1"><Info className="h-3 w-3" />{priorityConfig?.label || 'FYI'}</Badge>;
   }
 }
 
@@ -117,7 +130,8 @@ function NewUpdateForm({ partners, onSubmit, isSubmitting }: NewUpdateFormProps)
   const [conversions, setConversions] = useState('');
   const [inventoryPercent, setInventoryPercent] = useState('');
   const [weeklyBlurb, setWeeklyBlurb] = useState('');
-  const [priorityTag, setPriorityTag] = useState<'critical' | 'fyi' | 'action_required'>('fyi');
+  const [priorityTag, setPriorityTag] = useState<string>('fyi');
+  const [affiliatePlatform, setAffiliatePlatform] = useState('');
   const [resources, setResources] = useState<ExternalResource[]>([]);
   const [newResourceTitle, setNewResourceTitle] = useState('');
   const [newResourceUrl, setNewResourceUrl] = useState('');
@@ -159,9 +173,9 @@ function NewUpdateForm({ partners, onSubmit, isSubmitting }: NewUpdateFormProps)
   return (
     <div className="space-y-6">
       <div>
-        <Label>Brand</Label>
+        <Label>Brand *</Label>
         <Select value={partnerId} onValueChange={setPartnerId}>
-          <SelectTrigger>
+          <SelectTrigger className="bg-surface">
             <SelectValue placeholder="Select a brand" />
           </SelectTrigger>
           <SelectContent>
@@ -176,28 +190,40 @@ function NewUpdateForm({ partners, onSubmit, isSubmitting }: NewUpdateFormProps)
         <Label className="mb-2 block">Metric Grid</Label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <div>
-            <Label className="text-xs text-muted-foreground">Revenue</Label>
-            <Input type="number" placeholder="0" value={revenue} onChange={(e) => setRevenue(e.target.value)} />
+            <Label className="text-xs text-muted-foreground flex items-center gap-1">
+              <MetricTooltip metric="revenue">Revenue</MetricTooltip>
+            </Label>
+            <Input type="number" placeholder="0" value={revenue} onChange={(e) => setRevenue(e.target.value)} className="bg-surface" />
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">CAC</Label>
-            <Input type="number" placeholder="0" value={cac} onChange={(e) => setCac(e.target.value)} />
+            <Label className="text-xs text-muted-foreground flex items-center gap-1">
+              <MetricTooltip metric="cac">CAC</MetricTooltip>
+            </Label>
+            <Input type="number" placeholder="0" value={cac} onChange={(e) => setCac(e.target.value)} className="bg-surface" />
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">ROAS</Label>
-            <Input type="number" step="0.01" placeholder="0" value={roas} onChange={(e) => setRoas(e.target.value)} />
+            <Label className="text-xs text-muted-foreground flex items-center gap-1">
+              <MetricTooltip metric="roas">ROAS</MetricTooltip>
+            </Label>
+            <Input type="number" step="0.01" placeholder="0" value={roas} onChange={(e) => setRoas(e.target.value)} className="bg-surface" />
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">Spend</Label>
-            <Input type="number" placeholder="0" value={spend} onChange={(e) => setSpend(e.target.value)} />
+            <Label className="text-xs text-muted-foreground flex items-center gap-1">
+              <MetricTooltip metric="spend">Spend</MetricTooltip>
+            </Label>
+            <Input type="number" placeholder="0" value={spend} onChange={(e) => setSpend(e.target.value)} className="bg-surface" />
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">Conversions</Label>
-            <Input type="number" placeholder="0" value={conversions} onChange={(e) => setConversions(e.target.value)} />
+            <Label className="text-xs text-muted-foreground flex items-center gap-1">
+              <MetricTooltip metric="conversions">Conversions</MetricTooltip>
+            </Label>
+            <Input type="number" placeholder="0" value={conversions} onChange={(e) => setConversions(e.target.value)} className="bg-surface" />
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">Inventory %</Label>
-            <Input type="number" step="0.1" placeholder="0" value={inventoryPercent} onChange={(e) => setInventoryPercent(e.target.value)} />
+            <Label className="text-xs text-muted-foreground flex items-center gap-1">
+              <MetricTooltip metric="inventory">Inventory %</MetricTooltip>
+            </Label>
+            <Input type="number" step="0.1" placeholder="0" value={inventoryPercent} onChange={(e) => setInventoryPercent(e.target.value)} className="bg-surface" />
           </div>
         </div>
       </div>
@@ -208,29 +234,52 @@ function NewUpdateForm({ partners, onSubmit, isSubmitting }: NewUpdateFormProps)
           value={weeklyBlurb}
           onChange={setWeeklyBlurb}
           placeholder="Write your weekly insight summary..."
-          className="min-h-[120px]"
+          className="min-h-[120px] bg-surface"
         />
       </div>
 
-      <div>
-        <Label>Priority Tag</Label>
-        <Select value={priorityTag} onValueChange={(v) => setPriorityTag(v as typeof priorityTag)}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="fyi">FYI</SelectItem>
-            <SelectItem value="action_required">Action Required</SelectItem>
-            <SelectItem value="critical">Critical</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Priority Tag *</Label>
+          <Select value={priorityTag} onValueChange={setPriorityTag}>
+            <SelectTrigger className="bg-surface">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PRIORITY_TAGS.map((tag) => (
+                <SelectItem key={tag.value} value={tag.value}>
+                  <span className="flex items-center gap-2">
+                    {tag.value === 'critical' && <AlertTriangle className="h-3 w-3 text-critical" />}
+                    {tag.value === 'action_required' && <Bell className="h-3 w-3 text-warning" />}
+                    {tag.value === 'fyi' && <Info className="h-3 w-3 text-primary" />}
+                    {tag.label}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label>Affiliate Platform</Label>
+          <Select value={affiliatePlatform} onValueChange={setAffiliatePlatform}>
+            <SelectTrigger className="bg-surface">
+              <SelectValue placeholder="Select platform" />
+            </SelectTrigger>
+            <SelectContent>
+              {AFFILIATE_PLATFORMS.map((platform) => (
+                <SelectItem key={platform} value={platform}>{platform}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div>
         <Label className="mb-2 block">External Resources</Label>
         <div className="space-y-2">
           {resources.map((r, i) => (
-            <div key={i} className="flex items-center gap-2 bg-muted/50 rounded px-3 py-2">
+            <div key={i} className="flex items-center gap-2 bg-surface border border-border rounded-none px-3 py-2">
               <LinkIcon className="h-4 w-4 text-muted-foreground" />
               <span className="flex-1 text-sm">{r.title}</span>
               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeResource(i)}>
@@ -239,8 +288,8 @@ function NewUpdateForm({ partners, onSubmit, isSubmitting }: NewUpdateFormProps)
             </div>
           ))}
           <div className="flex gap-2">
-            <Input placeholder="Title" value={newResourceTitle} onChange={(e) => setNewResourceTitle(e.target.value)} className="flex-1" />
-            <Input placeholder="URL" value={newResourceUrl} onChange={(e) => setNewResourceUrl(e.target.value)} className="flex-1" />
+            <Input placeholder="Title" value={newResourceTitle} onChange={(e) => setNewResourceTitle(e.target.value)} className="flex-1 bg-surface" />
+            <Input placeholder="URL" value={newResourceUrl} onChange={(e) => setNewResourceUrl(e.target.value)} className="flex-1 bg-surface" />
             <Button variant="outline" size="sm" onClick={addResource}>Add</Button>
           </div>
         </div>
@@ -302,13 +351,13 @@ function InsightTimeline({ insights, groupByBrand = false }: InsightTimelineProp
 
   return (
     <div className="space-y-4">
-      {insights.map((insight, idx) => {
+      {insights.map((insight) => {
         const isExpanded = expandedIds.has(insight.id);
         const previousInsight = getPreviousInsight(insight);
 
         return (
           <Collapsible key={insight.id} open={isExpanded} onOpenChange={() => toggleExpand(insight.id)}>
-            <Card className={`transition-all ${insight.priority_tag === 'critical' ? 'border-destructive/50 bg-destructive/5' : ''}`}>
+            <Card className={`transition-all rounded-none ${insight.priority_tag === 'critical' ? 'border-critical/50 bg-critical/5' : ''}`}>
               <CollapsibleTrigger asChild>
                 <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
                   <div className="flex items-center justify-between">
@@ -333,12 +382,12 @@ function InsightTimeline({ insights, groupByBrand = false }: InsightTimelineProp
               <CollapsibleContent>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                    <MetricCard label="Revenue" value={insight.revenue} previousValue={previousInsight?.revenue} format="currency" />
-                    <MetricCard label="CAC" value={insight.cac} previousValue={previousInsight?.cac} format="currency" />
-                    <MetricCard label="ROAS" value={insight.roas} previousValue={previousInsight?.roas} />
-                    <MetricCard label="Spend" value={insight.spend} previousValue={previousInsight?.spend} format="currency" />
-                    <MetricCard label="Conversions" value={insight.conversions} previousValue={previousInsight?.conversions} />
-                    <MetricCard label="Inventory %" value={insight.inventory_percent} previousValue={previousInsight?.inventory_percent} format="percent" />
+                    <MetricCard label="Revenue" value={insight.revenue} previousValue={previousInsight?.revenue} format="currency" metricType="revenue" />
+                    <MetricCard label="CAC" value={insight.cac} previousValue={previousInsight?.cac} format="currency" metricType="cac" />
+                    <MetricCard label="ROAS" value={insight.roas} previousValue={previousInsight?.roas} metricType="roas" />
+                    <MetricCard label="Spend" value={insight.spend} previousValue={previousInsight?.spend} format="currency" metricType="spend" />
+                    <MetricCard label="Conversions" value={insight.conversions} previousValue={previousInsight?.conversions} metricType="conversions" />
+                    <MetricCard label="Inventory %" value={insight.inventory_percent} previousValue={previousInsight?.inventory_percent} format="percent" metricType="inventory" />
                   </div>
 
                   {insight.weekly_blurb && (
@@ -461,7 +510,7 @@ export function AnalystBriefingDesk() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Analyst Briefing Desk</h2>
+          <h2 className="text-xl font-semibold tracking-scientific">Analyst Briefing Desk</h2>
           <p className="text-sm text-muted-foreground">Weekly performance updates and insights</p>
         </div>
         <Dialog open={isNewUpdateOpen} onOpenChange={setIsNewUpdateOpen}>
@@ -486,9 +535,9 @@ export function AnalystBriefingDesk() {
 
       {/* Critical Alerts Banner */}
       {criticalInsights.length > 0 && (
-        <Card className="border-destructive/50 bg-destructive/5">
+        <Card className="border-critical/50 bg-critical/5 rounded-none">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2 text-destructive">
+            <CardTitle className="text-sm font-medium flex items-center gap-2 text-critical">
               <AlertTriangle className="h-4 w-4" />
               Critical Updates (Last 7 Days)
             </CardTitle>
@@ -510,7 +559,7 @@ export function AnalystBriefingDesk() {
       <div className="flex items-center gap-4">
         <div className="w-64">
           <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
-            <SelectTrigger>
+            <SelectTrigger className="bg-surface">
               <SelectValue placeholder="Filter by brand" />
             </SelectTrigger>
             <SelectContent>
@@ -526,7 +575,7 @@ export function AnalystBriefingDesk() {
       {/* Split-View Layout: The Pulse (Left) + The Briefing (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Pane: The Pulse - Latest Metrics */}
-        <Card className="h-fit">
+        <Card className="h-fit rounded-none">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               📊 The Pulse
@@ -542,35 +591,41 @@ export function AnalystBriefingDesk() {
                     label="Revenue" 
                     value={insights[0].revenue} 
                     previousValue={insights[1]?.revenue} 
-                    format="currency" 
+                    format="currency"
+                    metricType="revenue"
                   />
                   <MetricCard 
                     label="CAC" 
                     value={insights[0].cac} 
                     previousValue={insights[1]?.cac} 
-                    format="currency" 
+                    format="currency"
+                    metricType="cac"
                   />
                   <MetricCard 
                     label="ROAS" 
                     value={insights[0].roas} 
-                    previousValue={insights[1]?.roas} 
+                    previousValue={insights[1]?.roas}
+                    metricType="roas"
                   />
                   <MetricCard 
                     label="Spend" 
                     value={insights[0].spend} 
                     previousValue={insights[1]?.spend} 
-                    format="currency" 
+                    format="currency"
+                    metricType="spend"
                   />
                   <MetricCard 
                     label="Conversions" 
                     value={insights[0].conversions} 
-                    previousValue={insights[1]?.conversions} 
+                    previousValue={insights[1]?.conversions}
+                    metricType="conversions"
                   />
                   <MetricCard 
                     label="Inventory %" 
                     value={insights[0].inventory_percent} 
                     previousValue={insights[1]?.inventory_percent} 
-                    format="percent" 
+                    format="percent"
+                    metricType="inventory"
                   />
                 </div>
                 <p className="text-xs text-muted-foreground text-center">
@@ -588,7 +643,7 @@ export function AnalystBriefingDesk() {
         </Card>
 
         {/* Right Pane: The Briefing - Weekly Blurbs Feed */}
-        <Card>
+        <Card className="rounded-none">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               🧠 The Briefing
@@ -604,12 +659,12 @@ export function AnalystBriefingDesk() {
                   {insights.slice(0, 10).map((insight) => (
                     <div 
                       key={insight.id}
-                      className={`p-4 rounded-lg border ${
+                      className={`p-4 rounded-none border ${
                         insight.priority_tag === 'critical' 
-                          ? 'border-destructive/50 bg-destructive/5' 
+                          ? 'border-critical/50 bg-critical/5' 
                           : insight.priority_tag === 'action_required'
-                          ? 'border-amber-500/50 bg-amber-500/5'
-                          : 'border-border bg-muted/30'
+                          ? 'border-warning/50 bg-warning/5'
+                          : 'border-border bg-surface'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -635,7 +690,7 @@ export function AnalystBriefingDesk() {
                         <p className="text-sm text-muted-foreground italic">No blurb provided</p>
                       )}
                       {insight.external_resources && insight.external_resources.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t">
+                        <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-border">
                           {insight.external_resources.map((r, i) => (
                             <a
                               key={i}
@@ -665,9 +720,9 @@ export function AnalystBriefingDesk() {
       </div>
 
       {/* Full Timeline (Collapsible) */}
-      <Card>
+      <Card className="rounded-none">
         <CardHeader>
-          <CardTitle className="text-lg">Full Timeline</CardTitle>
+          <CardTitle className="text-lg tracking-scientific">Full Timeline</CardTitle>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[500px]">
