@@ -19,6 +19,7 @@ import { TeamWorkspaceToggle, TeamWorkspace } from '@/components/admin/TeamWorks
 import { MarketingDashboard } from '@/components/admin/workspace/MarketingDashboard';
 import { LegalDashboard } from '@/components/admin/workspace/LegalDashboard';
 import { CreativeDashboard } from '@/components/admin/workspace/CreativeDashboard';
+import { BusinessDevDashboard } from '@/components/admin/workspace/BusinessDevDashboard';
 
 interface ChannelStats {
   channel: string;
@@ -92,6 +93,7 @@ export default function AdminDashboard() {
       {activeWorkspace === 'marketing' && <MarketingDashboard />}
       {activeWorkspace === 'legal' && <LegalDashboard />}
       {activeWorkspace === 'creative' && <CreativeDashboard />}
+      {activeWorkspace === 'business_dev' && <BusinessDevDashboard />}
 
       {/* Original Summary Cards - always visible */}
       <div className="pt-6 border-t">

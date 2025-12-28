@@ -366,6 +366,63 @@ export type Database = {
         }
         Relationships: []
       }
+      prospects: {
+        Row: {
+          assigned_to: string | null
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          created_at: string
+          created_by: string
+          estimated_deal_value: number | null
+          id: string
+          industry: string | null
+          notes: string | null
+          source: string | null
+          stage: Database["public"]["Enums"]["pipeline_stage"]
+          stage_updated_at: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string
+          created_by: string
+          estimated_deal_value?: number | null
+          id?: string
+          industry?: string | null
+          notes?: string | null
+          source?: string | null
+          stage?: Database["public"]["Enums"]["pipeline_stage"]
+          stage_updated_at?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          company_name?: string
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string
+          estimated_deal_value?: number | null
+          id?: string
+          industry?: string | null
+          notes?: string | null
+          source?: string | null
+          stage?: Database["public"]["Enums"]["pipeline_stage"]
+          stage_updated_at?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       stakeholders: {
         Row: {
           created_at: string
@@ -441,6 +498,13 @@ export type Database = {
     Enums: {
       app_role: "admin" | "partner"
       contract_status: "draft" | "signed" | "expired"
+      pipeline_stage:
+        | "prospecting"
+        | "initial_pitch"
+        | "negotiation"
+        | "contract_sent"
+        | "closed_won"
+        | "closed_lost"
       review_status: "pending" | "approved" | "revision_requested"
     }
     CompositeTypes: {
@@ -571,6 +635,14 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "partner"],
       contract_status: ["draft", "signed", "expired"],
+      pipeline_stage: [
+        "prospecting",
+        "initial_pitch",
+        "negotiation",
+        "contract_sent",
+        "closed_won",
+        "closed_lost",
+      ],
       review_status: ["pending", "approved", "revision_requested"],
     },
   },
