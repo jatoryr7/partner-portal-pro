@@ -17,7 +17,8 @@ import {
   DollarSign,
   Calendar,
   UserCheck,
-  FileText
+  FileText,
+  Stethoscope,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,6 +48,7 @@ import {
 import { format, differenceInDays, differenceInHours, isWithinInterval, addDays } from 'date-fns';
 import { toast } from 'sonner';
 import { CallPrepExport } from '@/components/admin/CallPrepExport';
+import { MedicalStatusIndicator, mapMedicalStatus } from '@/components/admin/medical/MedicalStatusIndicator';
 
 interface Stakeholder {
   id: string;
@@ -73,6 +75,7 @@ interface Partner {
   stakeholders: Stakeholder[];
   asset_count: number;
   total_deal_value: number;
+  medical_review_status?: string | null;
 }
 
 interface TeamMember {
@@ -139,6 +142,14 @@ export default function BrandDirectory() {
 
       if (dealError) throw dealError;
 
+      // Fetch medical review statuses for all partners
+      const { data: medicalReviews, error: medicalError } = await supabase
+        .from('medical_reviews')
+        .select('partner_id, status')
+        .order('created_at', { ascending: false });
+
+      if (medicalError) throw medicalError;
+
       // Aggregate asset counts by partner_id
       const countsByPartner = (assetCounts || []).reduce((acc, asset) => {
         acc[asset.partner_id] = (acc[asset.partner_id] || 0) + 1;
@@ -151,12 +162,21 @@ export default function BrandDirectory() {
         return acc;
       }, {} as Record<string, number>);
 
-      // Merge asset counts and deal values into partner data
+      // Get most recent medical review status by partner_id
+      const medicalStatusByPartner = (medicalReviews || []).reduce((acc, review) => {
+        if (!acc[review.partner_id]) {
+          acc[review.partner_id] = review.status;
+        }
+        return acc;
+      }, {} as Record<string, string>);
+
+      // Merge asset counts, deal values, and medical status into partner data
       const enrichedPartners = (partnersData || []).map(partner => ({
         ...partner,
         stakeholders: partner.stakeholders || [],
         asset_count: countsByPartner[partner.id] || 0,
         total_deal_value: dealValuesByPartner[partner.id] || 0,
+        medical_review_status: medicalStatusByPartner[partner.id] || null,
       })) as Partner[];
 
       // Sort by total deal value (highest first)
@@ -414,6 +434,11 @@ export default function BrandDirectory() {
                                   {partner.campaign_status.priority} priority
                                 </Badge>
                               )}
+                              {/* Medical Status Indicator */}
+                              <MedicalStatusIndicator 
+                                status={mapMedicalStatus(partner.medical_review_status)} 
+                                size="md"
+                              />
                             </div>
                             <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground flex-wrap">
                               <span className="flex items-center gap-1">

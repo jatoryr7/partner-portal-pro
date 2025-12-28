@@ -56,6 +56,14 @@
     /* Warm Warning */
     --warning: 38 92% 50%;
     --warning-light: 38 90% 95%;
+    
+    /* Medical Standards Theme Tokens */
+    --medical-slate: 210 29% 24%;
+    --medical-slate-foreground: 0 0% 100%;
+    --pulse-blue: 204 70% 53%;
+    --pulse-blue-light: 204 70% 93%;
+    --amber-alert: 39 90% 51%;
+    --amber-alert-light: 39 90% 94%;
 
     /* Clinical Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(185 65% 42%) 0%, hsl(175 60% 40%) 100%);
