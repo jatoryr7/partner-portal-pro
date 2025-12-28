@@ -9,9 +9,9 @@ import {
   LogOut,
   Users,
   Kanban,
-  ClipboardCheck,
   ArrowLeftRight,
-  UserCog
+  UserCog,
+  Building2
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -121,6 +121,18 @@ export function AdminSidebar() {
                   >
                     <UserCog className="mr-2 h-4 w-4" />
                     {!collapsed && <span>User Management</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink 
+                    to="/admin/brands" 
+                    className="hover:bg-sidebar-accent/50" 
+                    activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+                  >
+                    <Building2 className="mr-2 h-4 w-4" />
+                    {!collapsed && <span>Brand Directory</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>

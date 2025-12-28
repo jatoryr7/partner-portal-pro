@@ -19,6 +19,7 @@ import StakeholderDashboard from "./pages/admin/StakeholderDashboard";
 import AdminQueue from "./pages/admin/AdminQueue";
 import SubmissionReview from "./pages/admin/SubmissionReview";
 import UserManagement from "./pages/admin/UserManagement";
+import BrandDirectory from "./pages/admin/BrandDirectory";
 import NativeView from "./pages/admin/NativeView";
 import PaidSocialView from "./pages/admin/PaidSocialView";
 import MediaView from "./pages/admin/MediaView";
@@ -65,6 +66,7 @@ const App = () => (
                 <Route path="submission/:id" element={<SubmissionReview />} />
                 <Route path="stakeholders" element={<StakeholderDashboard />} />
                 <Route path="users" element={<UserManagement />} />
+                <Route path="brands" element={<BrandDirectory />} />
                 <Route path="native" element={<NativeView />} />
                 <Route path="paid-social" element={<PaidSocialView />} />
                 <Route path="media" element={<MediaView />} />
