@@ -5,12 +5,22 @@ import { InventoryView } from '@/components/admin/operations/InventoryView';
 import { PurchaseOrdersView } from '@/components/admin/operations/PurchaseOrdersView';
 import { SuppliersView } from '@/components/admin/operations/SuppliersView';
 import { AnalystBriefingDesk } from '@/components/admin/workspace/AnalystBriefingDesk';
+import { CallPrepExport } from '@/components/admin/CallPrepExport';
 
 export function OperationsDashboard() {
   const [activeTab, setActiveTab] = useState('inventory');
 
   return (
     <div className="space-y-6">
+      {/* Header with Call Prep Export */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Operations</h2>
+          <p className="text-muted-foreground">Manage inventory, orders, and analyst briefings</p>
+        </div>
+        <CallPrepExport />
+      </div>
+
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4 max-w-lg">
           <TabsTrigger value="inventory" className="gap-2">

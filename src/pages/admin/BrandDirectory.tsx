@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,8 +16,8 @@ import {
   ChevronUp,
   DollarSign,
   Calendar,
-  Clock,
-  UserCheck
+  UserCheck,
+  FileText
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,6 +46,7 @@ import {
 } from '@/components/ui/select';
 import { format, differenceInDays, differenceInHours, isWithinInterval, addDays } from 'date-fns';
 import { toast } from 'sonner';
+import { CallPrepExport } from '@/components/admin/CallPrepExport';
 
 interface Stakeholder {
   id: string;
@@ -470,32 +471,35 @@ export default function BrandDirectory() {
                   <CollapsibleContent>
                     <Separator />
                     <CardContent className="pt-4 space-y-6">
-                      {/* Owner Assignment */}
-                      <div className="flex items-center gap-4">
-                        <Label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-                          Assigned Manager:
-                        </Label>
-                        <Select
-                          value={partner.assigned_manager_id || 'unassigned'}
-                          onValueChange={(value) => {
-                            updateManagerMutation.mutate({
-                              partnerId: partner.id,
-                              managerId: value === 'unassigned' ? null : value,
-                            });
-                          }}
-                        >
-                          <SelectTrigger className="w-64">
-                            <SelectValue placeholder="Select a manager" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="unassigned">Unassigned</SelectItem>
-                            {teamMembers?.map((member) => (
-                              <SelectItem key={member.id} value={member.id}>
-                                {member.full_name || member.email || 'Unknown'}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                      {/* Owner Assignment and Call Prep */}
+                      <div className="flex items-center justify-between flex-wrap gap-4">
+                        <div className="flex items-center gap-4">
+                          <Label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+                            Assigned Manager:
+                          </Label>
+                          <Select
+                            value={partner.assigned_manager_id || 'unassigned'}
+                            onValueChange={(value) => {
+                              updateManagerMutation.mutate({
+                                partnerId: partner.id,
+                                managerId: value === 'unassigned' ? null : value,
+                              });
+                            }}
+                          >
+                            <SelectTrigger className="w-64">
+                              <SelectValue placeholder="Select a manager" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="unassigned">Unassigned</SelectItem>
+                              {teamMembers?.map((member) => (
+                                <SelectItem key={member.id} value={member.id}>
+                                  {member.full_name || member.email || 'Unknown'}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <CallPrepExport partnerId={partner.id} partnerName={partner.company_name} />
                       </div>
 
                       {/* Next Meeting Section (visible on mobile in expanded view) */}
