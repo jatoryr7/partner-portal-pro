@@ -26,7 +26,7 @@ import PaidSocialView from "./pages/admin/PaidSocialView";
 import MediaView from "./pages/admin/MediaView";
 import NewsletterView from "./pages/admin/NewsletterView";
 import ContentMarketingView from "./pages/admin/ContentMarketingView";
-
+import AdminSettings from "./pages/admin/AdminSettings";
 // Partner pages
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
 
@@ -74,6 +74,7 @@ const App = () => (
                 <Route path="media" element={<MediaView />} />
                 <Route path="newsletter" element={<NewsletterView />} />
                 <Route path="content-marketing" element={<ContentMarketingView />} />
+                <Route path="settings" element={<AdminSettings />} />
               </Route>
               
               <Route path="*" element={<NotFound />} />
