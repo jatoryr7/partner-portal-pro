@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,6 +30,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { REVIEW_STEPS, type ReviewStatus, type ReviewStepId } from '@/types/campaign';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { AssetGallery } from '@/components/admin/AssetGallery';
+import { CopyReviewPane } from '@/components/admin/CopyReviewPane';
 
 interface PartnerSubmission {
   id: string;
@@ -479,60 +482,52 @@ export default function SubmissionReview() {
                       </div>
                     )}
 
-                    {/* Step 3: Creative Assets */}
+                    {/* Step 3: Creative Assets - Optimized for Content Teams */}
                     {currentStep === 2 && (
-                      <div className="space-y-4">
-                        {assets.length === 0 ? (
-                          <p className="text-muted-foreground italic">No assets uploaded</p>
-                        ) : (
-                          assets.map(asset => (
-                            <div key={asset.id} className="p-4 bg-muted/50 rounded-lg space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Badge>{asset.channel}</Badge>
-                                <Badge variant={asset.isComplete ? 'default' : 'outline'}>
-                                  {asset.isComplete ? 'Complete' : 'Incomplete'}
-                                </Badge>
-                              </div>
-                              {asset.fileUrls.length > 0 && (
-                                <div>
-                                  <p className="text-sm text-muted-foreground">Files:</p>
-                                  <div className="flex flex-wrap gap-2 mt-1">
-                                    {asset.fileUrls.map((url, idx) => (
-                                      <a 
-                                        key={idx}
-                                        href={url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-sm text-primary hover:underline"
-                                      >
-                                        File {idx + 1}
-                                      </a>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                              {asset.copyText && (
-                                <div>
-                                  <p className="text-sm text-muted-foreground">Copy:</p>
-                                  <p className="text-sm mt-1">{asset.copyText}</p>
-                                </div>
-                              )}
-                              {asset.affiliateLink && (
-                                <div>
-                                  <p className="text-sm text-muted-foreground">Affiliate Link:</p>
-                                  <a 
-                                    href={asset.affiliateLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-sm text-primary hover:underline"
-                                  >
-                                    {asset.affiliateLink}
-                                  </a>
-                                </div>
-                              )}
-                            </div>
-                          ))
-                        )}
+                      <div className="space-y-6">
+                        <Tabs defaultValue="gallery" className="w-full">
+                          <TabsList className="grid w-full grid-cols-2 mb-4">
+                            <TabsTrigger value="gallery" className="flex items-center gap-2">
+                              <Palette className="w-4 h-4" />
+                              Visual Gallery
+                            </TabsTrigger>
+                            <TabsTrigger value="copy" className="flex items-center gap-2">
+                              <MessageSquare className="w-4 h-4" />
+                              Copy Review
+                            </TabsTrigger>
+                          </TabsList>
+
+                          <TabsContent value="gallery" className="mt-0">
+                            <AssetGallery assets={assets} />
+                          </TabsContent>
+
+                          <TabsContent value="copy" className="mt-0">
+                            <CopyReviewPane 
+                              assets={assets} 
+                              campaignId={id || ''} 
+                            />
+                          </TabsContent>
+                        </Tabs>
+
+                        {/* Asset Summary */}
+                        <div className="grid grid-cols-3 gap-3 pt-4 border-t border-border">
+                          <div className="p-3 bg-muted/50 rounded-lg text-center">
+                            <p className="text-2xl font-bold text-foreground">{assets.length}</p>
+                            <p className="text-xs text-muted-foreground">Total Assets</p>
+                          </div>
+                          <div className="p-3 bg-muted/50 rounded-lg text-center">
+                            <p className="text-2xl font-bold text-foreground">
+                              {assets.filter(a => a.isComplete).length}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Complete</p>
+                          </div>
+                          <div className="p-3 bg-muted/50 rounded-lg text-center">
+                            <p className="text-2xl font-bold text-foreground">
+                              {[...new Set(assets.map(a => a.channel))].length}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Channels</p>
+                          </div>
+                        </div>
                       </div>
                     )}
 
