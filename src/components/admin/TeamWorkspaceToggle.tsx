@@ -8,9 +8,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { Users, ChevronDown, Megaphone, Scale, Palette, Briefcase, Settings2, UserCog } from 'lucide-react';
+import { Users, ChevronDown, Megaphone, Scale, Palette, Briefcase, Settings2, UserCog, LayoutGrid } from 'lucide-react';
 
-export type TeamWorkspace = 'marketing' | 'legal' | 'creative' | 'business_dev' | 'operations' | 'partner_mgmt';
+export type TeamWorkspace = 'marketing' | 'legal' | 'creative' | 'business_dev' | 'operations' | 'partner_mgmt' | 'content_inventory';
 
 interface TeamWorkspaceToggleProps {
   activeWorkspace: TeamWorkspace;
@@ -47,6 +47,12 @@ const workspaceConfig: Record<TeamWorkspace, { label: string; icon: React.Elemen
     icon: UserCog,
     color: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
     group: 'sales',
+  },
+  content_inventory: {
+    label: 'Content Inventory',
+    icon: LayoutGrid,
+    color: 'bg-pink-500/10 text-pink-500 border-pink-500/20',
+    group: 'media',
   },
   operations: {
     label: 'Operations',
