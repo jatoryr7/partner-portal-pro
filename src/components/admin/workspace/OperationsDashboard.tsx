@@ -12,13 +12,15 @@ import {
   DollarSign,
   AlertTriangle,
   ClipboardList,
-  Calendar
+  Calendar,
+  Receipt
 } from 'lucide-react';
 import { ContentInventoryExplorer } from '@/components/admin/workspace/ContentInventoryExplorer';
 import { AnalystBriefingDesk } from '@/components/admin/workspace/AnalystBriefingDesk';
 import { CallPrepExport } from '@/components/admin/CallPrepExport';
 import { InsertionOrdersView } from '@/components/admin/operations/InsertionOrdersView';
 import { PerformanceFeedView } from '@/components/admin/operations/PerformanceFeedView';
+import { MonthlyBillablesView } from '@/components/admin/billables/MonthlyBillablesView';
 
 export function OperationsDashboard() {
   const [activeTab, setActiveTab] = useState('pacing');
@@ -185,26 +187,26 @@ export function OperationsDashboard() {
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 max-w-2xl">
+        <TabsList className="grid w-full grid-cols-5 max-w-3xl">
           <TabsTrigger value="pacing" className="gap-2">
             <BarChart3 className="h-4 w-4" />
-            <span className="hidden sm:inline">Pacing & Inventory</span>
-            <span className="sm:hidden">Pacing</span>
+            <span className="hidden sm:inline">Pacing</span>
           </TabsTrigger>
           <TabsTrigger value="intelligence" className="gap-2">
             <Brain className="h-4 w-4" />
-            <span className="hidden sm:inline">Brand Intelligence</span>
-            <span className="sm:hidden">Intel</span>
+            <span className="hidden sm:inline">Intel</span>
           </TabsTrigger>
           <TabsTrigger value="orders" className="gap-2">
             <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Insertion Orders</span>
-            <span className="sm:hidden">IOs</span>
+            <span className="hidden sm:inline">IOs</span>
           </TabsTrigger>
           <TabsTrigger value="performance" className="gap-2">
             <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Performance Feed</span>
-            <span className="sm:hidden">Perf</span>
+            <span className="hidden sm:inline">Perf</span>
+          </TabsTrigger>
+          <TabsTrigger value="billables" className="gap-2">
+            <Receipt className="h-4 w-4" />
+            <span className="hidden sm:inline">Billables</span>
           </TabsTrigger>
         </TabsList>
 
@@ -222,6 +224,10 @@ export function OperationsDashboard() {
 
         <TabsContent value="performance" className="mt-6">
           <PerformanceFeedView />
+        </TabsContent>
+
+        <TabsContent value="billables" className="mt-6">
+          <MonthlyBillablesView />
         </TabsContent>
       </Tabs>
     </div>
