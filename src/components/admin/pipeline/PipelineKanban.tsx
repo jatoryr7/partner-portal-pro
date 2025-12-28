@@ -4,17 +4,17 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Search, 
-  Phone, 
   Handshake, 
-  FileText, 
   Trophy,
   XCircle,
   DollarSign,
   Mail,
   Building2,
-  GripVertical
+  GripVertical,
+  Target
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PIPELINE_STAGES } from '@/config/inputOptions';
 
 type PipelineStage = 'prospecting' | 'initial_pitch' | 'negotiation' | 'contract_sent' | 'closed_won' | 'closed_lost';
 
@@ -43,14 +43,23 @@ interface PipelineKanbanProps {
   isLoading?: boolean;
 }
 
-const STAGES: { key: PipelineStage; label: string; icon: React.ElementType; color: string }[] = [
-  { key: 'prospecting', label: 'Prospecting', icon: Search, color: 'bg-slate-500/10 text-slate-500 border-slate-500/20' },
-  { key: 'initial_pitch', label: 'Initial Pitch', icon: Phone, color: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
-  { key: 'negotiation', label: 'Negotiation', icon: Handshake, color: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
-  { key: 'contract_sent', label: 'Contract Sent', icon: FileText, color: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
-  { key: 'closed_won', label: 'Closed Won', icon: Trophy, color: 'bg-success/10 text-success border-success/20' },
-  { key: 'closed_lost', label: 'Closed Lost', icon: XCircle, color: 'bg-destructive/10 text-destructive border-destructive/20' },
+// Simplified 4-stage flow as requested: Prospecting → Qualified → Negotiation → Won
+const SIMPLIFIED_STAGES: { key: PipelineStage; label: string; icon: React.ElementType; color: string }[] = [
+  { key: 'prospecting', label: 'Prospecting', icon: Search, color: 'border-muted-foreground/30 bg-muted/30' },
+  { key: 'initial_pitch', label: 'Qualified', icon: Target, color: 'border-primary/30 bg-primary/5' },
+  { key: 'negotiation', label: 'Negotiation', icon: Handshake, color: 'border-warning/30 bg-warning/5' },
+  { key: 'closed_won', label: 'Won', icon: Trophy, color: 'border-success/30 bg-success/5' },
 ];
+
+// Map legacy stages to simplified flow
+const STAGE_MAP: Record<PipelineStage, PipelineStage> = {
+  prospecting: 'prospecting',
+  initial_pitch: 'initial_pitch',
+  negotiation: 'negotiation',
+  contract_sent: 'negotiation', // Map contract_sent to negotiation
+  closed_won: 'closed_won',
+  closed_lost: 'closed_won', // Show lost deals in won column with different badge
+};
 
 export function PipelineKanban({ prospects, onStageChange, isLoading }: PipelineKanbanProps) {
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -91,7 +100,16 @@ export function PipelineKanban({ prospects, onStageChange, isLoading }: Pipeline
   };
 
   const getProspectsByStage = (stage: PipelineStage) => {
-    return prospects.filter(p => p.stage === stage);
+    return prospects.filter(p => {
+      // Handle mapping for simplified flow
+      if (stage === 'negotiation') {
+        return p.stage === 'negotiation' || p.stage === 'contract_sent';
+      }
+      if (stage === 'closed_won') {
+        return p.stage === 'closed_won' || p.stage === 'closed_lost';
+      }
+      return p.stage === stage;
+    });
   };
 
   const formatCurrency = (value: number | null) => {
@@ -118,13 +136,13 @@ export function PipelineKanban({ prospects, onStageChange, isLoading }: Pipeline
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-6 gap-4">
-        {STAGES.map((stage) => (
+      <div className="grid grid-cols-4 gap-4">
+        {SIMPLIFIED_STAGES.map((stage) => (
           <div key={stage.key} className="space-y-3">
-            <div className="h-10 bg-muted rounded animate-pulse" />
+            <div className="h-10 bg-muted rounded-none animate-pulse" />
             <div className="space-y-2">
               {[1, 2].map((i) => (
-                <div key={i} className="h-32 bg-muted rounded animate-pulse" />
+                <div key={i} className="h-32 bg-muted rounded-none animate-pulse" />
               ))}
             </div>
           </div>
@@ -134,8 +152,8 @@ export function PipelineKanban({ prospects, onStageChange, isLoading }: Pipeline
   }
 
   return (
-    <div className="grid grid-cols-6 gap-4 min-h-[600px]">
-      {STAGES.map((stage) => {
+    <div className="grid grid-cols-4 gap-4 min-h-[600px]">
+      {SIMPLIFIED_STAGES.map((stage) => {
         const stageProspects = getProspectsByStage(stage.key);
         const stageValue = stageProspects.reduce((sum, p) => sum + (p.estimated_deal_value || 0), 0);
         const Icon = stage.icon;
@@ -144,24 +162,25 @@ export function PipelineKanban({ prospects, onStageChange, isLoading }: Pipeline
           <div
             key={stage.key}
             className={cn(
-              "flex flex-col rounded-lg border bg-muted/30 transition-colors",
-              dragOverStage === stage.key && "border-primary bg-primary/5"
+              "flex flex-col rounded-none border transition-colors",
+              stage.color,
+              dragOverStage === stage.key && "border-primary ring-2 ring-primary/20"
             )}
             onDragOver={(e) => handleDragOver(e, stage.key)}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, stage.key)}
           >
             {/* Column Header */}
-            <div className="p-3 border-b bg-background/50 rounded-t-lg">
+            <div className="p-3 border-b bg-surface rounded-none">
               <div className="flex items-center gap-2 mb-1">
                 <Icon className="w-4 h-4 text-muted-foreground" />
-                <span className="font-medium text-sm">{stage.label}</span>
-                <Badge variant="secondary" className="ml-auto text-xs">
+                <span className="font-semibold text-sm tracking-wide">{stage.label}</span>
+                <Badge variant="secondary" className="ml-auto text-xs rounded-none">
                   {stageProspects.length}
                 </Badge>
               </div>
               {stageValue > 0 && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground font-medium">
                   {formatCurrency(stageValue)}
                 </p>
               )}
@@ -177,8 +196,9 @@ export function PipelineKanban({ prospects, onStageChange, isLoading }: Pipeline
                     onDragStart={(e) => handleDragStart(e, prospect.id)}
                     onDragEnd={handleDragEnd}
                     className={cn(
-                      "cursor-grab active:cursor-grabbing hover:shadow-md transition-all",
-                      draggedId === prospect.id && "opacity-50 scale-95"
+                      "cursor-grab active:cursor-grabbing hover:shadow-md transition-all rounded-none border",
+                      draggedId === prospect.id && "opacity-50 scale-95",
+                      prospect.stage === 'closed_lost' && "border-critical/30 bg-critical/5"
                     )}
                   >
                     <CardContent className="p-3 space-y-2">
@@ -193,6 +213,9 @@ export function PipelineKanban({ prospects, onStageChange, isLoading }: Pipeline
                             <span className="truncate">{prospect.contact_name}</span>
                           </div>
                         </div>
+                        {prospect.stage === 'closed_lost' && (
+                          <XCircle className="w-4 h-4 text-critical flex-shrink-0" />
+                        )}
                       </div>
 
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -209,9 +232,9 @@ export function PipelineKanban({ prospects, onStageChange, isLoading }: Pipeline
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between pt-1 border-t">
+                      <div className="flex items-center justify-between pt-1 border-t border-border">
                         {prospect.source && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs rounded-none">
                             {prospect.source}
                           </Badge>
                         )}

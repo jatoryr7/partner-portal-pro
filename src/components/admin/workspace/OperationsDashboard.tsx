@@ -96,10 +96,10 @@ export function OperationsDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header with Call Prep Export */}
-      <div className="flex items-center justify-between">
+      {/* Header with Call Prep Export - Locked to top-right */}
+      <div className="flex items-center justify-between sticky top-0 z-10 bg-background py-2 -mt-2 -mx-1 px-1">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Operations Hub</h2>
+          <h2 className="text-2xl font-bold tracking-scientific">Operations Hub</h2>
           <p className="text-muted-foreground">Manage inventory, briefings, and campaign performance</p>
         </div>
         <CallPrepExport />
