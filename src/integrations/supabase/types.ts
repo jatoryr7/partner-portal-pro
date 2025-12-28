@@ -766,6 +766,68 @@ export type Database = {
           },
         ]
       }
+      operational_insights: {
+        Row: {
+          cac: number | null
+          conversions: number | null
+          created_at: string
+          created_by: string
+          external_resources: Json | null
+          id: string
+          inventory_percent: number | null
+          partner_id: string
+          priority_tag: string
+          revenue: number | null
+          roas: number | null
+          spend: number | null
+          updated_at: string
+          week_start: string
+          weekly_blurb: string | null
+        }
+        Insert: {
+          cac?: number | null
+          conversions?: number | null
+          created_at?: string
+          created_by: string
+          external_resources?: Json | null
+          id?: string
+          inventory_percent?: number | null
+          partner_id: string
+          priority_tag?: string
+          revenue?: number | null
+          roas?: number | null
+          spend?: number | null
+          updated_at?: string
+          week_start?: string
+          weekly_blurb?: string | null
+        }
+        Update: {
+          cac?: number | null
+          conversions?: number | null
+          created_at?: string
+          created_by?: string
+          external_resources?: Json | null
+          id?: string
+          inventory_percent?: number | null
+          partner_id?: string
+          priority_tag?: string
+          revenue?: number | null
+          roas?: number | null
+          spend?: number | null
+          updated_at?: string
+          week_start?: string
+          weekly_blurb?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operational_insights_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partners: {
         Row: {
           company_name: string
