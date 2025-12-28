@@ -53,7 +53,7 @@ interface Partner {
     priority: string;
   } | null;
   stakeholders: Stakeholder[];
-  creative_assets: { id: string }[];
+  asset_count: number;
 }
 
 export default function BrandDirectory() {
@@ -64,7 +64,8 @@ export default function BrandDirectory() {
   const { data: partners, isLoading } = useQuery({
     queryKey: ['partners-directory-full'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch partners with joined stakeholders and campaign_status
+      const { data: partnersData, error: partnersError } = await supabase
         .from('partners')
         .select(`
           *,
@@ -78,15 +79,31 @@ export default function BrandDirectory() {
             role,
             email,
             phone
-          ),
-          creative_assets (
-            id
           )
         `)
         .order('company_name', { ascending: true });
 
-      if (error) throw error;
-      return data as Partner[];
+      if (partnersError) throw partnersError;
+
+      // Fetch asset counts for all partners
+      const { data: assetCounts, error: assetError } = await supabase
+        .from('creative_assets')
+        .select('partner_id');
+
+      if (assetError) throw assetError;
+
+      // Aggregate asset counts by partner_id
+      const countsByPartner = (assetCounts || []).reduce((acc, asset) => {
+        acc[asset.partner_id] = (acc[asset.partner_id] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Merge asset counts into partner data
+      return (partnersData || []).map(partner => ({
+        ...partner,
+        stakeholders: partner.stakeholders || [],
+        asset_count: countsByPartner[partner.id] || 0,
+      })) as Partner[];
     },
   });
 
@@ -203,7 +220,7 @@ export default function BrandDirectory() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {partners?.reduce((acc, p) => acc + (p.creative_assets?.length || 0), 0) || 0}
+              {partners?.reduce((acc, p) => acc + (p.asset_count || 0), 0) || 0}
             </div>
           </CardContent>
         </Card>
@@ -269,10 +286,10 @@ export default function BrandDirectory() {
                               <Users className="h-3.5 w-3.5" />
                               {partner.stakeholders?.length || 0} contacts
                             </span>
-                            <span className="flex items-center gap-1">
+                            <Badge variant="secondary" className="flex items-center gap-1">
                               <FolderOpen className="h-3.5 w-3.5" />
-                              {partner.creative_assets?.length || 0} assets
-                            </span>
+                              {partner.asset_count} assets
+                            </Badge>
                             <span>
                               Submitted {format(new Date(partner.submission_date), 'MMM d, yyyy')}
                             </span>
@@ -378,9 +395,10 @@ export default function BrandDirectory() {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p>No contacts associated with this brand</p>
+                      <div className="flex flex-col items-center justify-center py-8 text-muted-foreground border border-dashed rounded-lg bg-muted/20">
+                        <Users className="h-10 w-10 mb-3 opacity-40" />
+                        <p className="font-medium">No creative contacts yet</p>
+                        <p className="text-sm mt-1">This brand hasn't added any stakeholder contacts</p>
                       </div>
                     )}
                   </CardContent>
