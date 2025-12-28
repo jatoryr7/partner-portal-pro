@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Megaphone, 
@@ -9,7 +9,8 @@ import {
   LogOut,
   Users,
   Kanban,
-  ClipboardCheck
+  ClipboardCheck,
+  ArrowLeftRight
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -41,10 +42,16 @@ export function AdminSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const location = useLocation();
-  const { signOut } = useAuth();
+  const navigate = useNavigate();
+  const { signOut, roles, setActiveRole } = useAuth();
   const currentPath = location.pathname;
 
   const isActive = (path: string) => currentPath === path;
+
+  const handleSwitchRole = () => {
+    setActiveRole('partner');
+    navigate('/partner');
+  };
 
   return (
     <Sidebar className={collapsed ? 'w-14' : 'w-64'} collapsible="icon">
@@ -131,7 +138,17 @@ export function AdminSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-2">
+      <SidebarFooter className="border-t border-sidebar-border p-2 space-y-1">
+        {roles.includes('partner') && (
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start text-muted-foreground hover:text-foreground"
+            onClick={handleSwitchRole}
+          >
+            <ArrowLeftRight className="mr-2 h-4 w-4" />
+            {!collapsed && <span>Switch to Partner</span>}
+          </Button>
+        )}
         <Button 
           variant="ghost" 
           className="w-full justify-start text-muted-foreground hover:text-foreground"
