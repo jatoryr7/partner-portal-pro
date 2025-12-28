@@ -814,6 +814,154 @@ export type Database = {
           },
         ]
       }
+      master_brands: {
+        Row: {
+          common_id: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          common_id: string
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          common_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      monthly_billables: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          billing_month: string
+          conversions: number
+          created_at: string
+          dispute_notes: string | null
+          dispute_status: string | null
+          gross_revenue: number
+          id: string
+          internal_tracked_payout: number
+          is_approved: boolean
+          master_brand_id: string
+          network: string
+          network_reported_payout: number
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          billing_month: string
+          conversions?: number
+          created_at?: string
+          dispute_notes?: string | null
+          dispute_status?: string | null
+          gross_revenue?: number
+          id?: string
+          internal_tracked_payout?: number
+          is_approved?: boolean
+          master_brand_id: string
+          network: string
+          network_reported_payout?: number
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          billing_month?: string
+          conversions?: number
+          created_at?: string
+          dispute_notes?: string | null
+          dispute_status?: string | null
+          gross_revenue?: number
+          id?: string
+          internal_tracked_payout?: number
+          is_approved?: boolean
+          master_brand_id?: string
+          network?: string
+          network_reported_payout?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_billables_master_brand_id_fkey"
+            columns: ["master_brand_id"]
+            isOneToOne: false
+            referencedRelation: "master_brands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      network_api_status: {
+        Row: {
+          id: string
+          is_connected: boolean
+          last_error: string | null
+          last_sync_at: string | null
+          network: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          is_connected?: boolean
+          last_error?: string | null
+          last_sync_at?: string | null
+          network: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          is_connected?: boolean
+          last_error?: string | null
+          last_sync_at?: string | null
+          network?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      network_brand_mappings: {
+        Row: {
+          created_at: string
+          id: string
+          master_brand_id: string
+          network: string
+          network_brand_id: string | null
+          network_brand_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          master_brand_id: string
+          network: string
+          network_brand_id?: string | null
+          network_brand_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          master_brand_id?: string
+          network?: string
+          network_brand_id?: string | null
+          network_brand_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "network_brand_mappings_master_brand_id_fkey"
+            columns: ["master_brand_id"]
+            isOneToOne: false
+            referencedRelation: "master_brands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operational_insights: {
         Row: {
           cac: number | null
