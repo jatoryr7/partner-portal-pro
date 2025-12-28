@@ -73,7 +73,9 @@ const primaryWorkspaces: TeamWorkspace[] = ['sales_bd', 'operations', 'inventory
 const secondaryWorkspaces: TeamWorkspace[] = ['marketing', 'legal', 'creative'];
 
 export function TeamWorkspaceToggle({ activeWorkspace, onWorkspaceChange }: TeamWorkspaceToggleProps) {
-  const current = workspaceConfig[activeWorkspace];
+  // Fallback to sales_bd if workspace is invalid or undefined
+  const validWorkspace = workspaceConfig[activeWorkspace] ? activeWorkspace : 'sales_bd';
+  const current = workspaceConfig[validWorkspace];
   const Icon = current.icon;
 
   return (

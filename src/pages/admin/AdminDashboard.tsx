@@ -34,15 +34,33 @@ interface ChannelStats {
   needsRevision: number;
 }
 
+// Map legacy workspace names to current ones
+const WORKSPACE_ALIASES: Record<string, TeamWorkspace> = {
+  'business_dev': 'sales_bd',
+};
+
+const VALID_WORKSPACES: TeamWorkspace[] = ['sales_bd', 'operations', 'inventory', 'partner_success', 'marketing', 'legal', 'creative'];
+
+function normalizeWorkspace(param: string | null): TeamWorkspace {
+  if (!param) return 'sales_bd';
+  // Check if it's an alias
+  if (WORKSPACE_ALIASES[param]) return WORKSPACE_ALIASES[param];
+  // Check if it's a valid workspace
+  if (VALID_WORKSPACES.includes(param as TeamWorkspace)) return param as TeamWorkspace;
+  // Default fallback
+  return 'sales_bd';
+}
+
 export default function AdminDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const workspaceParam = searchParams.get('workspace') as TeamWorkspace | null;
-  const [activeWorkspace, setActiveWorkspace] = useState<TeamWorkspace>(workspaceParam || 'sales_bd');
+  const workspaceParam = searchParams.get('workspace');
+  const [activeWorkspace, setActiveWorkspace] = useState<TeamWorkspace>(() => normalizeWorkspace(workspaceParam));
 
   // Sync workspace with URL params
   useEffect(() => {
-    if (workspaceParam && workspaceParam !== activeWorkspace) {
-      setActiveWorkspace(workspaceParam);
+    const normalized = normalizeWorkspace(workspaceParam);
+    if (normalized !== activeWorkspace) {
+      setActiveWorkspace(normalized);
     }
   }, [workspaceParam]);
 
