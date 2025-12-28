@@ -42,6 +42,7 @@ import {
   STATUS_COLORS,
   calculateGrade,
 } from '@/hooks/useMedicalReviews';
+import { JumpToPipeline, JumpToBrands } from '@/components/admin/JumpButton';
 
 function ScoreSlider({ 
   label, 
@@ -242,6 +243,10 @@ export function MedicalScoringInterface() {
                       {review.campaign_deals && (
                         <p className="text-xs text-muted-foreground">{review.campaign_deals.deal_name}</p>
                       )}
+                      <div className="flex gap-2 mt-1">
+                        <JumpToPipeline brandId={review.partner_id} dealId={review.deal_id || undefined} />
+                        <JumpToBrands brandId={review.partner_id} />
+                      </div>
                     </div>
                   </div>
                 </TableCell>
