@@ -13,7 +13,8 @@ import {
   AlertTriangle,
   ClipboardList,
   Calendar,
-  Receipt
+  Receipt,
+  Microscope
 } from 'lucide-react';
 import { ContentInventoryExplorer } from '@/components/admin/workspace/ContentInventoryExplorer';
 import { AnalystBriefingDesk } from '@/components/admin/workspace/AnalystBriefingDesk';
@@ -21,6 +22,7 @@ import { CallPrepExport } from '@/components/admin/CallPrepExport';
 import { InsertionOrdersView } from '@/components/admin/operations/InsertionOrdersView';
 import { PerformanceFeedView } from '@/components/admin/operations/PerformanceFeedView';
 import { MonthlyBillablesView } from '@/components/admin/billables/MonthlyBillablesView';
+import { MedicalReviewDesk } from '@/components/admin/medical/MedicalReviewDesk';
 
 export function OperationsDashboard() {
   const [activeTab, setActiveTab] = useState('pacing');
@@ -187,7 +189,7 @@ export function OperationsDashboard() {
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5 max-w-3xl">
+        <TabsList className="grid w-full grid-cols-6 max-w-4xl">
           <TabsTrigger value="pacing" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Pacing</span>
@@ -195,6 +197,10 @@ export function OperationsDashboard() {
           <TabsTrigger value="intelligence" className="gap-2">
             <Brain className="h-4 w-4" />
             <span className="hidden sm:inline">Intel</span>
+          </TabsTrigger>
+          <TabsTrigger value="medical" className="gap-2">
+            <Microscope className="h-4 w-4" />
+            <span className="hidden sm:inline">Medical</span>
           </TabsTrigger>
           <TabsTrigger value="orders" className="gap-2">
             <FileText className="h-4 w-4" />
@@ -216,6 +222,10 @@ export function OperationsDashboard() {
 
         <TabsContent value="intelligence" className="mt-6">
           <AnalystBriefingDesk />
+        </TabsContent>
+
+        <TabsContent value="medical" className="mt-6">
+          <MedicalReviewDesk />
         </TabsContent>
 
         <TabsContent value="orders" className="mt-6">

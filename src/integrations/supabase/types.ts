@@ -838,6 +838,102 @@ export type Database = {
         }
         Relationships: []
       }
+      medical_reviews: {
+        Row: {
+          bd_approved_at: string | null
+          bd_approved_by: string | null
+          bd_notes: string | null
+          clinical_claims: string[] | null
+          clinical_evidence_score: number | null
+          created_at: string
+          deal_id: string | null
+          estimated_revenue: number | null
+          final_decision_at: string | null
+          final_decision_by: string | null
+          final_decision_notes: string | null
+          id: string
+          medical_notes: string | null
+          medical_reviewed_at: string | null
+          medical_reviewer_id: string | null
+          overall_grade: string | null
+          partner_id: string
+          report_generated_at: string | null
+          required_disclaimers: string[] | null
+          safety_concerns: string[] | null
+          safety_score: number | null
+          status: Database["public"]["Enums"]["medical_review_status"]
+          transparency_score: number | null
+          updated_at: string
+        }
+        Insert: {
+          bd_approved_at?: string | null
+          bd_approved_by?: string | null
+          bd_notes?: string | null
+          clinical_claims?: string[] | null
+          clinical_evidence_score?: number | null
+          created_at?: string
+          deal_id?: string | null
+          estimated_revenue?: number | null
+          final_decision_at?: string | null
+          final_decision_by?: string | null
+          final_decision_notes?: string | null
+          id?: string
+          medical_notes?: string | null
+          medical_reviewed_at?: string | null
+          medical_reviewer_id?: string | null
+          overall_grade?: string | null
+          partner_id: string
+          report_generated_at?: string | null
+          required_disclaimers?: string[] | null
+          safety_concerns?: string[] | null
+          safety_score?: number | null
+          status?: Database["public"]["Enums"]["medical_review_status"]
+          transparency_score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          bd_approved_at?: string | null
+          bd_approved_by?: string | null
+          bd_notes?: string | null
+          clinical_claims?: string[] | null
+          clinical_evidence_score?: number | null
+          created_at?: string
+          deal_id?: string | null
+          estimated_revenue?: number | null
+          final_decision_at?: string | null
+          final_decision_by?: string | null
+          final_decision_notes?: string | null
+          id?: string
+          medical_notes?: string | null
+          medical_reviewed_at?: string | null
+          medical_reviewer_id?: string | null
+          overall_grade?: string | null
+          partner_id?: string
+          report_generated_at?: string | null
+          required_disclaimers?: string[] | null
+          safety_concerns?: string[] | null
+          safety_score?: number | null
+          status?: Database["public"]["Enums"]["medical_review_status"]
+          transparency_score?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_reviews_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_reviews_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_billables: {
         Row: {
           approved_at: string | null
@@ -1394,6 +1490,12 @@ export type Database = {
         | "closed_won"
         | "closed_lost"
       inventory_availability: "available" | "pitched" | "booked"
+      medical_review_status:
+        | "pending_bd_approval"
+        | "in_medical_review"
+        | "approved"
+        | "rejected"
+        | "requires_revision"
       pipeline_stage:
         | "prospecting"
         | "initial_pitch"
@@ -1549,6 +1651,13 @@ export const Constants = {
         "closed_lost",
       ],
       inventory_availability: ["available", "pitched", "booked"],
+      medical_review_status: [
+        "pending_bd_approval",
+        "in_medical_review",
+        "approved",
+        "rejected",
+        "requires_revision",
+      ],
       pipeline_stage: [
         "prospecting",
         "initial_pitch",
