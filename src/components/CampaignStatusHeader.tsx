@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Calendar, Flag, CheckCircle2, Clock, Rocket, Trophy, FileText, Users } from 'lucide-react';
+import { Calendar, Flag, CheckCircle2, Clock, Rocket, Trophy, FileText, Users, FolderOpen } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -23,6 +23,7 @@ interface CampaignStatusHeaderProps {
 }
 
 const STAGE_ICONS: Record<CampaignStage, React.ElementType> = {
+  asset_collection: FolderOpen,
   new_submission: FileText,
   creative_review: CheckCircle2,
   partner_review: Users,
