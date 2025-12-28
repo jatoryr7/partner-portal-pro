@@ -131,6 +131,62 @@ export type Database = {
           },
         ]
       }
+      campaign_analytics: {
+        Row: {
+          cac: number | null
+          campaign_id: string
+          clicks: number | null
+          conversions: number | null
+          created_at: string
+          id: string
+          impressions: number | null
+          notes: string | null
+          period_end: string
+          period_start: string
+          revenue: number | null
+          spend: number | null
+          updated_at: string
+        }
+        Insert: {
+          cac?: number | null
+          campaign_id: string
+          clicks?: number | null
+          conversions?: number | null
+          created_at?: string
+          id?: string
+          impressions?: number | null
+          notes?: string | null
+          period_end: string
+          period_start: string
+          revenue?: number | null
+          spend?: number | null
+          updated_at?: string
+        }
+        Update: {
+          cac?: number | null
+          campaign_id?: string
+          clicks?: number | null
+          conversions?: number | null
+          created_at?: string
+          id?: string
+          impressions?: number | null
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          revenue?: number | null
+          spend?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_analytics_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_deals: {
         Row: {
           assigned_internal_manager: string | null
@@ -139,6 +195,7 @@ export type Database = {
           deal_name: string
           deal_value: number | null
           end_date: string | null
+          funnel_stage: Database["public"]["Enums"]["funnel_stage"] | null
           id: string
           notes: string | null
           partner_id: string
@@ -152,6 +209,7 @@ export type Database = {
           deal_name: string
           deal_value?: number | null
           end_date?: string | null
+          funnel_stage?: Database["public"]["Enums"]["funnel_stage"] | null
           id?: string
           notes?: string | null
           partner_id: string
@@ -165,6 +223,7 @@ export type Database = {
           deal_name?: string
           deal_value?: number | null
           end_date?: string | null
+          funnel_stage?: Database["public"]["Enums"]["funnel_stage"] | null
           id?: string
           notes?: string | null
           partner_id?: string
@@ -358,6 +417,50 @@ export type Database = {
             columns: ["partner_id"]
             isOneToOne: false
             referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory: {
+        Row: {
+          campaign_id: string | null
+          created_at: string
+          created_by: string
+          date_slot: string
+          id: string
+          notes: string | null
+          property_name: string
+          status: Database["public"]["Enums"]["placement_status"]
+          updated_at: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string
+          created_by: string
+          date_slot: string
+          id?: string
+          notes?: string | null
+          property_name: string
+          status?: Database["public"]["Enums"]["placement_status"]
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string
+          created_by?: string
+          date_slot?: string
+          id?: string
+          notes?: string | null
+          property_name?: string
+          status?: Database["public"]["Enums"]["placement_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_deals"
             referencedColumns: ["id"]
           },
         ]
@@ -786,6 +889,13 @@ export type Database = {
     Enums: {
       app_role: "admin" | "partner"
       contract_status: "draft" | "signed" | "expired"
+      funnel_stage:
+        | "prospecting"
+        | "qualification"
+        | "proposal"
+        | "negotiation"
+        | "closed_won"
+        | "closed_lost"
       pipeline_stage:
         | "prospecting"
         | "initial_pitch"
@@ -932,6 +1042,14 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "partner"],
       contract_status: ["draft", "signed", "expired"],
+      funnel_stage: [
+        "prospecting",
+        "qualification",
+        "proposal",
+        "negotiation",
+        "closed_won",
+        "closed_lost",
+      ],
       pipeline_stage: [
         "prospecting",
         "initial_pitch",
