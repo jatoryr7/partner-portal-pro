@@ -38,6 +38,7 @@ import {
 } from '@/hooks/useMedicalReviews';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { JumpToPipeline, JumpToBrands } from '@/components/admin/JumpButton';
 
 export function SubmissionQueue() {
   const { data: reviews, isLoading } = useMedicalReviews('pending_bd_approval');
@@ -174,7 +175,13 @@ export function SubmissionQueue() {
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{review.partners?.company_name}</span>
+                    <div>
+                      <span className="font-medium">{review.partners?.company_name}</span>
+                      <div className="flex gap-2 mt-1">
+                        <JumpToPipeline brandId={review.partner_id} dealId={review.deal_id || undefined} />
+                        <JumpToBrands brandId={review.partner_id} />
+                      </div>
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>

@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ChevronDown, ChevronRight, AlertTriangle, CheckCircle, FileWarning, Flag } from 'lucide-react';
 import { AggregatedBillable, MonthlyBillable } from '@/hooks/useBillables';
 import { cn } from '@/lib/utils';
+import { JumpToBrands, JumpToMedical } from '@/components/admin/JumpButton';
 
 interface BillablesDataGridProps {
   billables: AggregatedBillable[];
@@ -89,8 +90,14 @@ function BillableRow({
                 <ChevronRight className="h-4 w-4" />
               )}
             </Button>
-            <span>{billable.masterBrandName}</span>
-            <span className="text-xs text-muted-foreground">({billable.commonId})</span>
+            <div>
+              <span>{billable.masterBrandName}</span>
+              <span className="text-xs text-muted-foreground ml-1">({billable.commonId})</span>
+              <div className="flex gap-2 mt-1">
+                <JumpToBrands />
+                <JumpToMedical />
+              </div>
+            </div>
           </div>
         </TableCell>
         <TableCell>

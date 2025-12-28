@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { Outlet, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Eye, LogOut, Search, TrendingUp, Package, Users, BarChart3, Activity, Settings } from 'lucide-react';
+import { Eye, LogOut, TrendingUp, Package, Users, BarChart3, Activity, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { CommandPalette, CommandPaletteTrigger } from '@/components/admin/CommandPalette';
 import { QuickActionsFAB } from '@/components/admin/QuickActionsFAB';
+import { PortalMapMenu, PortalMapTrigger } from '@/components/admin/PortalMapMenu';
+import { RoleQuickSwitcher, type ViewRole, getRoleConfig } from '@/components/admin/RoleQuickSwitcher';
 import { cn } from '@/lib/utils';
 
 type Workspace = 'sales_bd' | 'operations' | 'inventory' | 'partner_success';
@@ -20,6 +23,9 @@ export default function AdminLayout() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { signOut } = useAuth();
   
+  const [isPortalMapOpen, setIsPortalMapOpen] = useState(false);
+  const [activeViewRole, setActiveViewRole] = useState<ViewRole | null>(null);
+  
   const activeWorkspace = (searchParams.get('workspace') as Workspace) || 'sales_bd';
 
   const handleWorkspaceChange = (workspace: Workspace) => {
@@ -35,25 +41,37 @@ export default function AdminLayout() {
     navigate('/auth');
   };
 
+  // Filter workspaces based on active role
+  const roleConfig = getRoleConfig(activeViewRole);
+  const visibleWorkspaces = roleConfig
+    ? workspaces.filter(ws => roleConfig.visibleWorkspaces.includes(ws.id))
+    : workspaces;
+
   return (
     <div className="min-h-screen flex flex-col w-full bg-background">
       {/* Top Header Navigation Bar */}
       <header className="h-16 border-b border-border bg-card sticky top-0 z-50 shadow-sm">
         <div className="h-full max-w-[1800px] mx-auto px-6 flex items-center justify-between">
-          {/* Logo & Brand */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-9 h-9 rounded-sm bg-gradient-to-br from-primary to-healthcare-teal">
-              <Activity className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="text-base font-semibold tracking-scientific text-foreground">Command Center</h1>
-              <p className="text-xs text-muted-foreground -mt-0.5">Healthcare Analytics</p>
+          {/* Logo, Brand & Portal Map */}
+          <div className="flex items-center gap-4">
+            <PortalMapTrigger onClick={() => setIsPortalMapOpen(true)} />
+            
+            <div className="h-8 w-px bg-border hidden sm:block" />
+            
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-9 h-9 rounded-none bg-gradient-to-br from-primary to-healthcare-teal">
+                <Activity className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div className="hidden sm:block">
+                <h1 className="text-base font-semibold tracking-scientific text-foreground">Command Center</h1>
+                <p className="text-xs text-muted-foreground -mt-0.5">Healthcare Analytics</p>
+              </div>
             </div>
           </div>
 
           {/* Workspace Navigation */}
-          <nav className="hidden md:flex items-center gap-1 bg-secondary/50 p-1 rounded-sm">
-            {workspaces.map((ws) => {
+          <nav className="hidden md:flex items-center gap-1 bg-secondary/50 p-1 rounded-none">
+            {visibleWorkspaces.map((ws) => {
               const Icon = ws.icon;
               const isActive = activeWorkspace === ws.id;
               return (
@@ -61,9 +79,9 @@ export default function AdminLayout() {
                   key={ws.id}
                   onClick={() => handleWorkspaceChange(ws.id)}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all rounded-sm",
+                    "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all rounded-none",
                     isActive
-                      ? "bg-card text-foreground shadow-sm"
+                      ? "bg-card text-foreground shadow-sm border-b-2 border-primary"
                       : "text-muted-foreground hover:text-foreground hover:bg-card/50"
                   )}
                 >
@@ -82,7 +100,7 @@ export default function AdminLayout() {
               variant="ghost"
               size="icon"
               onClick={() => navigate('/admin/settings')}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground rounded-none"
               title="Settings"
             >
               <Settings className="w-4 h-4" />
@@ -92,7 +110,7 @@ export default function AdminLayout() {
               variant="outline"
               size="sm"
               onClick={handleViewAsPartner}
-              className="hidden sm:flex"
+              className="hidden sm:flex rounded-none"
             >
               <Eye className="w-4 h-4 mr-2" />
               Preview
@@ -102,7 +120,7 @@ export default function AdminLayout() {
               variant="ghost"
               size="icon"
               onClick={handleSignOut}
-              className="text-muted-foreground hover:text-destructive"
+              className="text-muted-foreground hover:text-destructive rounded-none"
             >
               <LogOut className="w-4 h-4" />
             </Button>
@@ -110,9 +128,15 @@ export default function AdminLayout() {
         </div>
       </header>
 
+      {/* Role Quick Switcher Bar */}
+      <RoleQuickSwitcher 
+        activeRole={activeViewRole} 
+        onRoleChange={setActiveViewRole} 
+      />
+
       {/* Mobile Workspace Navigation */}
       <nav className="md:hidden flex items-center gap-1 p-2 bg-card border-b border-border overflow-x-auto">
-        {workspaces.map((ws) => {
+        {visibleWorkspaces.map((ws) => {
           const Icon = ws.icon;
           const isActive = activeWorkspace === ws.id;
           return (
@@ -120,9 +144,9 @@ export default function AdminLayout() {
               key={ws.id}
               onClick={() => handleWorkspaceChange(ws.id)}
               className={cn(
-                "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-all rounded-sm whitespace-nowrap",
+                "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-all rounded-none whitespace-nowrap",
                 isActive
-                  ? "bg-primary/10 text-primary"
+                  ? "bg-primary/10 text-primary border-b-2 border-primary"
                   : "text-muted-foreground"
               )}
             >
@@ -136,9 +160,15 @@ export default function AdminLayout() {
       {/* Main Content */}
       <main className="flex-1 p-6 overflow-auto">
         <div className="max-w-[1800px] mx-auto">
-          <Outlet />
+          <Outlet context={{ activeViewRole }} />
         </div>
       </main>
+
+      {/* Portal Map Menu */}
+      <PortalMapMenu 
+        isOpen={isPortalMapOpen} 
+        onClose={() => setIsPortalMapOpen(false)} 
+      />
 
       {/* Global Command Palette */}
       <CommandPalette />
