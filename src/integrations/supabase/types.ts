@@ -93,6 +93,44 @@ export type Database = {
           },
         ]
       }
+      brand_comments: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          mentions: string[] | null
+          partner_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          mentions?: string[] | null
+          partner_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          mentions?: string[] | null
+          partner_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_comments_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_deals: {
         Row: {
           assigned_internal_manager: string | null
