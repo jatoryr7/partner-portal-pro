@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_reviews: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          id: string
+          internal_comments: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["review_status"]
+          step_name: string
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          id?: string
+          internal_comments?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["review_status"]
+          step_name: string
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          internal_comments?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["review_status"]
+          step_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_reviews_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_status"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       asset_feedback: {
         Row: {
           asset_id: string
@@ -301,6 +342,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "partner"
+      review_status: "pending" | "approved" | "revision_requested"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -429,6 +471,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "partner"],
+      review_status: ["pending", "approved", "revision_requested"],
     },
   },
 } as const
