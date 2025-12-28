@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Eye, LogOut, Search, TrendingUp, Package, Users, BarChart3, Activity } from 'lucide-react';
+import { Eye, LogOut, Search, TrendingUp, Package, Users, BarChart3, Activity, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { CommandPalette, CommandPaletteTrigger } from '@/components/admin/CommandPalette';
 import { QuickActionsFAB } from '@/components/admin/QuickActionsFAB';
@@ -77,6 +77,16 @@ export default function AdminLayout() {
           {/* Global Search & Actions */}
           <div className="flex items-center gap-3">
             <CommandPaletteTrigger />
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/admin/settings')}
+              className="text-muted-foreground hover:text-foreground"
+              title="Settings"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
             
             <Button
               variant="outline"

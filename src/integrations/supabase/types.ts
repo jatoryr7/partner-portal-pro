@@ -55,6 +55,54 @@ export type Database = {
           },
         ]
       }
+      app_configurations: {
+        Row: {
+          category: string
+          color: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          key: string
+          label: string
+          metadata: Json | null
+          sort_order: number
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          category: string
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          key: string
+          label: string
+          metadata?: Json | null
+          sort_order?: number
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          category?: string
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          key?: string
+          label?: string
+          metadata?: Json | null
+          sort_order?: number
+          updated_at?: string
+          value?: string | null
+        }
+        Relationships: []
+      }
       asset_feedback: {
         Row: {
           asset_id: string
