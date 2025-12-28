@@ -14,7 +14,11 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Outfit', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+      },
+      letterSpacing: {
+        'scientific': '0.05em',
+        'report': '0.08em',
       },
       colors: {
         border: "hsl(var(--border))",
@@ -66,6 +70,8 @@ export default {
           teal: "hsl(var(--healthcare-teal))",
           gray: "hsl(var(--healthcare-gray))",
         },
+        critical: "hsl(var(--destructive))",
+        healing: "hsl(var(--success))",
         success: {
           DEFAULT: "hsl(var(--success))",
           light: "hsl(var(--success-light))",
