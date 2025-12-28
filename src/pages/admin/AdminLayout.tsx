@@ -7,6 +7,7 @@ import { CommandPalette, CommandPaletteTrigger } from '@/components/admin/Comman
 import { QuickActionsFAB } from '@/components/admin/QuickActionsFAB';
 import { PortalMapMenu, PortalMapTrigger } from '@/components/admin/PortalMapMenu';
 import { RoleQuickSwitcher, type ViewRole, getRoleConfig } from '@/components/admin/RoleQuickSwitcher';
+import { SessionMonitor } from '@/components/admin/SessionMonitor';
 import { cn } from '@/lib/utils';
 
 type Workspace = 'sales_bd' | 'operations' | 'inventory' | 'partner_success';
@@ -175,6 +176,9 @@ export default function AdminLayout() {
       
       {/* Global Quick Actions FAB */}
       <QuickActionsFAB />
+      
+      {/* Session Monitor */}
+      <SessionMonitor />
     </div>
   );
 }
