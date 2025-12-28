@@ -1,5 +1,5 @@
 export type CampaignPriority = 'high' | 'medium' | 'low';
-export type CampaignStage = 'new_submission' | 'creative_review' | 'partner_review' | 'ready_for_launch' | 'live';
+export type CampaignStage = 'asset_collection' | 'new_submission' | 'creative_review' | 'partner_review' | 'ready_for_launch' | 'live';
 export type FeedbackStatus = 'pending' | 'approved' | 'needs_revision';
 export type ReviewStatus = 'pending' | 'approved' | 'revision_requested';
 
@@ -36,6 +36,7 @@ export interface AdminReview {
 }
 
 export const STAGE_LABELS: Record<CampaignStage, string> = {
+  asset_collection: 'Asset Collection',
   new_submission: 'New Submission',
   creative_review: 'Creative Review',
   partner_review: 'Partner Review',
@@ -44,6 +45,7 @@ export const STAGE_LABELS: Record<CampaignStage, string> = {
 };
 
 export const STAGE_ORDER: CampaignStage[] = [
+  'asset_collection',
   'new_submission',
   'creative_review',
   'partner_review',

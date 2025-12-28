@@ -103,6 +103,7 @@ export default function AdminQueue() {
 
   const groupedCampaigns = useMemo(() => {
     const groups: Record<CampaignStage, QueueCard[]> = {
+      asset_collection: [],
       new_submission: [],
       creative_review: [],
       partner_review: [],
