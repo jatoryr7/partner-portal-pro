@@ -484,7 +484,7 @@ export function AnalystBriefingDesk() {
         </Dialog>
       </div>
 
-      {/* Critical Alerts */}
+      {/* Critical Alerts Banner */}
       {criticalInsights.length > 0 && (
         <Card className="border-destructive/50 bg-destructive/5">
           <CardHeader className="pb-2">
@@ -506,7 +506,7 @@ export function AnalystBriefingDesk() {
         </Card>
       )}
 
-      {/* Filter */}
+      {/* Brand Filter */}
       <div className="flex items-center gap-4">
         <div className="w-64">
           <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
@@ -523,14 +523,162 @@ export function AnalystBriefingDesk() {
         </div>
       </div>
 
-      {/* Timeline */}
-      <ScrollArea className="h-[600px]">
-        {isLoading ? (
-          <div className="text-center py-12 text-muted-foreground">Loading...</div>
-        ) : (
-          <InsightTimeline insights={insights} groupByBrand={selectedPartnerId === 'all'} />
-        )}
-      </ScrollArea>
+      {/* Split-View Layout: The Pulse (Left) + The Briefing (Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Pane: The Pulse - Latest Metrics */}
+        <Card className="h-fit">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              📊 The Pulse
+              <span className="text-sm font-normal text-muted-foreground">Latest Metrics</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {insights.length > 0 ? (
+              <div className="space-y-4">
+                {/* Latest metrics from most recent insight */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <MetricCard 
+                    label="Revenue" 
+                    value={insights[0].revenue} 
+                    previousValue={insights[1]?.revenue} 
+                    format="currency" 
+                  />
+                  <MetricCard 
+                    label="CAC" 
+                    value={insights[0].cac} 
+                    previousValue={insights[1]?.cac} 
+                    format="currency" 
+                  />
+                  <MetricCard 
+                    label="ROAS" 
+                    value={insights[0].roas} 
+                    previousValue={insights[1]?.roas} 
+                  />
+                  <MetricCard 
+                    label="Spend" 
+                    value={insights[0].spend} 
+                    previousValue={insights[1]?.spend} 
+                    format="currency" 
+                  />
+                  <MetricCard 
+                    label="Conversions" 
+                    value={insights[0].conversions} 
+                    previousValue={insights[1]?.conversions} 
+                  />
+                  <MetricCard 
+                    label="Inventory %" 
+                    value={insights[0].inventory_percent} 
+                    previousValue={insights[1]?.inventory_percent} 
+                    format="percent" 
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  Week of {format(parseISO(insights[0].week_start), 'MMM d, yyyy')}
+                  {insights[0].partners && ` • ${insights[0].partners.company_name}`}
+                </p>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Info className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>No metrics data available</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Right Pane: The Briefing - Weekly Blurbs Feed */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              🧠 The Briefing
+              <span className="text-sm font-normal text-muted-foreground">Weekly Blurbs</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[400px]">
+              {isLoading ? (
+                <div className="text-center py-12 text-muted-foreground">Loading...</div>
+              ) : insights.length > 0 ? (
+                <div className="space-y-4 pr-4">
+                  {insights.slice(0, 10).map((insight) => (
+                    <div 
+                      key={insight.id}
+                      className={`p-4 rounded-lg border ${
+                        insight.priority_tag === 'critical' 
+                          ? 'border-destructive/50 bg-destructive/5' 
+                          : insight.priority_tag === 'action_required'
+                          ? 'border-amber-500/50 bg-amber-500/5'
+                          : 'border-border bg-muted/30'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
+                            Week of {format(parseISO(insight.week_start), 'MMM d')}
+                          </span>
+                          {insight.partners && (
+                            <span className="text-xs font-medium">
+                              • {insight.partners.company_name}
+                            </span>
+                          )}
+                        </div>
+                        <PriorityBadge tag={insight.priority_tag} />
+                      </div>
+                      {insight.weekly_blurb ? (
+                        <div 
+                          className="prose prose-sm max-w-none dark:prose-invert"
+                          dangerouslySetInnerHTML={{ __html: insight.weekly_blurb }} 
+                        />
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">No blurb provided</p>
+                      )}
+                      {insight.external_resources && insight.external_resources.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t">
+                          {insight.external_resources.map((r, i) => (
+                            <a
+                              key={i}
+                              href={r.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              {r.title}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Info className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p>No updates yet</p>
+                </div>
+              )}
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Full Timeline (Collapsible) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Full Timeline</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[500px]">
+            {isLoading ? (
+              <div className="text-center py-12 text-muted-foreground">Loading...</div>
+            ) : (
+              <InsightTimeline insights={insights} groupByBrand={selectedPartnerId === 'all'} />
+            )}
+          </ScrollArea>
+        </CardContent>
+      </Card>
     </div>
   );
 }
