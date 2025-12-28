@@ -7,7 +7,9 @@ import {
   Mail, 
   PenTool,
   LogOut,
-  Users
+  Users,
+  Kanban,
+  ClipboardCheck
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -75,6 +77,18 @@ export function AdminSidebar() {
                   >
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     {!collapsed && <span>Dashboard</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink 
+                    to="/admin/queue" 
+                    className="hover:bg-sidebar-accent/50" 
+                    activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+                  >
+                    <Kanban className="mr-2 h-4 w-4" />
+                    {!collapsed && <span>Campaign Queue</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>

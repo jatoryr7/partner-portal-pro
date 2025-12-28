@@ -16,6 +16,8 @@ import NotFound from "./pages/NotFound";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import StakeholderDashboard from "./pages/admin/StakeholderDashboard";
+import AdminQueue from "./pages/admin/AdminQueue";
+import SubmissionReview from "./pages/admin/SubmissionReview";
 import NativeView from "./pages/admin/NativeView";
 import PaidSocialView from "./pages/admin/PaidSocialView";
 import MediaView from "./pages/admin/MediaView";
@@ -58,6 +60,8 @@ const App = () => (
                 </ProtectedRoute>
               }>
                 <Route index element={<AdminDashboard />} />
+                <Route path="queue" element={<AdminQueue />} />
+                <Route path="submission/:id" element={<SubmissionReview />} />
                 <Route path="stakeholders" element={<StakeholderDashboard />} />
                 <Route path="native" element={<NativeView />} />
                 <Route path="paid-social" element={<PaidSocialView />} />
