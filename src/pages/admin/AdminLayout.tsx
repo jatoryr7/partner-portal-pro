@@ -4,6 +4,7 @@ import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { Button } from '@/components/ui/button';
 import { Eye, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { CommandPalette, CommandPaletteTrigger } from '@/components/admin/CommandPalette';
 
 export default function AdminLayout() {
   const navigate = useNavigate();
@@ -25,9 +26,10 @@ export default function AdminLayout() {
         <AdminSidebar />
         <main className="flex-1 flex flex-col">
           <header className="h-14 border-b border-border flex items-center justify-between px-4 bg-card">
-            <div className="flex items-center">
-              <SidebarTrigger className="mr-4" />
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="mr-2" />
               <h2 className="font-semibold text-foreground">Internal Dashboard</h2>
+              <CommandPaletteTrigger />
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -53,6 +55,7 @@ export default function AdminLayout() {
             <Outlet />
           </div>
         </main>
+        <CommandPalette />
       </div>
     </SidebarProvider>
   );
