@@ -141,6 +141,86 @@ export type Database = {
           },
         ]
       }
+      brand_applications: {
+        Row: {
+          brand_name: string
+          brand_url: string | null
+          category: string | null
+          clinical_trial_links: string[] | null
+          coa_file_urls: string[] | null
+          company_name: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          created_at: string
+          estimated_monthly_revenue: string | null
+          id: string
+          ingredient_docs_urls: string[] | null
+          medical_review_id: string | null
+          payment_intent_id: string | null
+          payment_status: string
+          primary_health_goal: string | null
+          review_fee_amount: number | null
+          status: string
+          tracker_id: string
+          updated_at: string
+        }
+        Insert: {
+          brand_name: string
+          brand_url?: string | null
+          category?: string | null
+          clinical_trial_links?: string[] | null
+          coa_file_urls?: string[] | null
+          company_name?: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string
+          estimated_monthly_revenue?: string | null
+          id?: string
+          ingredient_docs_urls?: string[] | null
+          medical_review_id?: string | null
+          payment_intent_id?: string | null
+          payment_status?: string
+          primary_health_goal?: string | null
+          review_fee_amount?: number | null
+          status?: string
+          tracker_id?: string
+          updated_at?: string
+        }
+        Update: {
+          brand_name?: string
+          brand_url?: string | null
+          category?: string | null
+          clinical_trial_links?: string[] | null
+          coa_file_urls?: string[] | null
+          company_name?: string | null
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          estimated_monthly_revenue?: string | null
+          id?: string
+          ingredient_docs_urls?: string[] | null
+          medical_review_id?: string | null
+          payment_intent_id?: string | null
+          payment_status?: string
+          primary_health_goal?: string | null
+          review_fee_amount?: number | null
+          status?: string
+          tracker_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_applications_medical_review_id_fkey"
+            columns: ["medical_review_id"]
+            isOneToOne: false
+            referencedRelation: "medical_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brand_comments: {
         Row: {
           author_id: string
@@ -1246,6 +1326,42 @@ export type Database = {
           stage_updated_at?: string
           updated_at?: string
           website?: string | null
+        }
+        Relationships: []
+      }
+      public_review_requests: {
+        Row: {
+          brand_name: string
+          brand_url: string | null
+          created_at: string
+          id: string
+          request_count: number
+          requester_email: string | null
+          requester_name: string | null
+          share_token: string
+          updated_at: string
+        }
+        Insert: {
+          brand_name: string
+          brand_url?: string | null
+          created_at?: string
+          id?: string
+          request_count?: number
+          requester_email?: string | null
+          requester_name?: string | null
+          share_token?: string
+          updated_at?: string
+        }
+        Update: {
+          brand_name?: string
+          brand_url?: string | null
+          created_at?: string
+          id?: string
+          request_count?: number
+          requester_email?: string | null
+          requester_name?: string | null
+          share_token?: string
+          updated_at?: string
         }
         Relationships: []
       }
