@@ -20,6 +20,7 @@ import { MarketingDashboard } from '@/components/admin/workspace/MarketingDashbo
 import { LegalDashboard } from '@/components/admin/workspace/LegalDashboard';
 import { CreativeDashboard } from '@/components/admin/workspace/CreativeDashboard';
 import { BusinessDevDashboard } from '@/components/admin/workspace/BusinessDevDashboard';
+import { OperationsDashboard } from '@/components/admin/workspace/OperationsDashboard';
 
 interface ChannelStats {
   channel: string;
@@ -94,6 +95,7 @@ export default function AdminDashboard() {
       {activeWorkspace === 'legal' && <LegalDashboard />}
       {activeWorkspace === 'creative' && <CreativeDashboard />}
       {activeWorkspace === 'business_dev' && <BusinessDevDashboard />}
+      {activeWorkspace === 'operations' && <OperationsDashboard />}
 
       {/* Original Summary Cards - always visible */}
       <div className="pt-6 border-t">

@@ -297,6 +297,71 @@ export type Database = {
           },
         ]
       }
+      inventory_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string
+          current_stock: number
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          reorder_level: number
+          reorder_quantity: number
+          sku: string
+          supplier_id: string | null
+          unit_cost: number | null
+          unit_of_measure: string
+          updated_at: string
+          warehouse_location: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by: string
+          current_stock?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          reorder_level?: number
+          reorder_quantity?: number
+          sku: string
+          supplier_id?: string | null
+          unit_cost?: number | null
+          unit_of_measure?: string
+          updated_at?: string
+          warehouse_location?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string
+          current_stock?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          reorder_level?: number
+          reorder_quantity?: number
+          sku?: string
+          supplier_id?: string | null
+          unit_cost?: number | null
+          unit_of_measure?: string
+          updated_at?: string
+          warehouse_location?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partners: {
         Row: {
           company_name: string
@@ -423,6 +488,119 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_order_items: {
+        Row: {
+          created_at: string
+          id: string
+          inventory_item_id: string
+          purchase_order_id: string
+          quantity_ordered: number
+          quantity_received: number
+          total_cost: number
+          unit_cost: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inventory_item_id: string
+          purchase_order_id: string
+          quantity_ordered: number
+          quantity_received?: number
+          total_cost: number
+          unit_cost: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inventory_item_id?: string
+          purchase_order_id?: string
+          quantity_ordered?: number
+          quantity_received?: number
+          total_cost?: number
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_items_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_orders: {
+        Row: {
+          actual_delivery: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string
+          expected_delivery: string | null
+          id: string
+          notes: string | null
+          order_date: string | null
+          po_number: string
+          shipping: number
+          status: Database["public"]["Enums"]["po_status"]
+          subtotal: number
+          supplier_id: string
+          tax: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          actual_delivery?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by: string
+          expected_delivery?: string | null
+          id?: string
+          notes?: string | null
+          order_date?: string | null
+          po_number: string
+          shipping?: number
+          status?: Database["public"]["Enums"]["po_status"]
+          subtotal?: number
+          supplier_id: string
+          tax?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          actual_delivery?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string
+          expected_delivery?: string | null
+          id?: string
+          notes?: string | null
+          order_date?: string | null
+          po_number?: string
+          shipping?: number
+          status?: Database["public"]["Enums"]["po_status"]
+          subtotal?: number
+          supplier_id?: string
+          tax?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stakeholders: {
         Row: {
           created_at: string
@@ -460,6 +638,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          payment_terms: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          payment_terms?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          payment_terms?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -505,6 +728,14 @@ export type Database = {
         | "contract_sent"
         | "closed_won"
         | "closed_lost"
+      po_status:
+        | "draft"
+        | "submitted"
+        | "approved"
+        | "ordered"
+        | "partially_received"
+        | "received"
+        | "cancelled"
       review_status: "pending" | "approved" | "revision_requested"
     }
     CompositeTypes: {
@@ -642,6 +873,15 @@ export const Constants = {
         "contract_sent",
         "closed_won",
         "closed_lost",
+      ],
+      po_status: [
+        "draft",
+        "submitted",
+        "approved",
+        "ordered",
+        "partially_received",
+        "received",
+        "cancelled",
       ],
       review_status: ["pending", "approved", "revision_requested"],
     },
