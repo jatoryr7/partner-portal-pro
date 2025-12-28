@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
+import { INDUSTRIES, LEAD_SOURCES } from '@/config/inputOptions';
 
 interface LeadCaptureDialogProps {
   open: boolean;
@@ -36,31 +37,6 @@ interface LeadCaptureDialogProps {
   }) => void;
   isLoading?: boolean;
 }
-
-const INDUSTRIES = [
-  'Technology',
-  'Finance',
-  'Healthcare',
-  'Retail',
-  'Manufacturing',
-  'Media & Entertainment',
-  'Travel & Hospitality',
-  'Education',
-  'Real Estate',
-  'Consumer Goods',
-  'Other',
-];
-
-const SOURCES = [
-  'Referral',
-  'Cold Outreach',
-  'Inbound Lead',
-  'Conference/Event',
-  'LinkedIn',
-  'Website',
-  'Partner Network',
-  'Other',
-];
 
 export function LeadCaptureDialog({
   open,
@@ -209,7 +185,7 @@ export function LeadCaptureDialog({
                   <SelectValue placeholder="How did you find them?" />
                 </SelectTrigger>
                 <SelectContent>
-                  {SOURCES.map((source) => (
+                  {LEAD_SOURCES.map((source) => (
                     <SelectItem key={source} value={source}>
                       {source}
                     </SelectItem>
