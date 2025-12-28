@@ -12,6 +12,9 @@ import Auth from "./pages/Auth";
 import RoleRouter from "./pages/RoleRouter";
 import NotFound from "./pages/NotFound";
 
+// Public pages
+import BrandIntegrityPortal from "./pages/public/BrandIntegrityPortal";
+
 // Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -47,6 +50,9 @@ const App = () => (
               <Route path="/auth/admin" element={<Auth />} />
               <Route path="/auth/partner" element={<Auth />} />
               <Route path="/auth" element={<Auth />} />
+              
+              {/* Public Brand Integrity Portal */}
+              <Route path="/brand-application" element={<BrandIntegrityPortal />} />
               
               {/* Role-based router */}
               <Route path="/" element={<RoleRouter />} />
