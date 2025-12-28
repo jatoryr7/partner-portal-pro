@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, Plus, FileText, AlertCircle, ArrowLeft, Eye } from 'lucide-react';
+import { LogOut, Plus, FileText, AlertCircle, ArrowLeft, Eye, ArrowLeftRight } from 'lucide-react';
 import { CampaignStage, CampaignPriority } from '@/types/campaign';
 
 interface PartnerSubmission {
@@ -29,7 +29,7 @@ export default function PartnerDashboard() {
   const [submissions, setSubmissions] = useState<PartnerSubmission[]>([]);
   const [showWizard, setShowWizard] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { user, role, signOut } = useAuth();
+  const { user, role, roles, setActiveRole, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -139,10 +139,24 @@ export default function PartnerDashboard() {
       <header className="h-14 border-b border-border flex items-center justify-between px-6 bg-card">
         <h1 className="font-semibold text-foreground">Partner Portal</h1>
         {!isPreviewMode && (
-          <Button variant="ghost" onClick={signOut}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            {roles.includes('admin') && (
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setActiveRole('admin');
+                  navigate('/admin');
+                }}
+              >
+                <ArrowLeftRight className="w-4 h-4 mr-2" />
+                Switch to Admin
+              </Button>
+            )}
+            <Button variant="ghost" onClick={signOut}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         )}
       </header>
 
