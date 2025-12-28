@@ -281,6 +281,183 @@ export type Database = {
           },
         ]
       }
+      content_ad_units: {
+        Row: {
+          article_id: string
+          booked_at: string | null
+          booked_end_date: string | null
+          booked_start_date: string | null
+          created_at: string
+          deal_id: string | null
+          id: string
+          notes: string | null
+          pitched_at: string | null
+          rate: number | null
+          status: Database["public"]["Enums"]["inventory_availability"]
+          unit_type: string
+          updated_at: string
+        }
+        Insert: {
+          article_id: string
+          booked_at?: string | null
+          booked_end_date?: string | null
+          booked_start_date?: string | null
+          created_at?: string
+          deal_id?: string | null
+          id?: string
+          notes?: string | null
+          pitched_at?: string | null
+          rate?: number | null
+          status?: Database["public"]["Enums"]["inventory_availability"]
+          unit_type: string
+          updated_at?: string
+        }
+        Update: {
+          article_id?: string
+          booked_at?: string | null
+          booked_end_date?: string | null
+          booked_start_date?: string | null
+          created_at?: string
+          deal_id?: string | null
+          id?: string
+          notes?: string | null
+          pitched_at?: string | null
+          rate?: number | null
+          status?: Database["public"]["Enums"]["inventory_availability"]
+          unit_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_ad_units_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "content_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_ad_units_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_articles: {
+        Row: {
+          created_at: string
+          id: string
+          k1_cluster_id: string
+          monthly_pageviews: number | null
+          status: Database["public"]["Enums"]["inventory_availability"]
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          k1_cluster_id: string
+          monthly_pageviews?: number | null
+          status?: Database["public"]["Enums"]["inventory_availability"]
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          k1_cluster_id?: string
+          monthly_pageviews?: number | null
+          status?: Database["public"]["Enums"]["inventory_availability"]
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_articles_k1_cluster_id_fkey"
+            columns: ["k1_cluster_id"]
+            isOneToOne: false
+            referencedRelation: "content_k1_clusters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          sub_vertical_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          sub_vertical_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          sub_vertical_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_categories_sub_vertical_id_fkey"
+            columns: ["sub_vertical_id"]
+            isOneToOne: false
+            referencedRelation: "content_sub_verticals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_k1_clusters: {
+        Row: {
+          category_id: string
+          created_at: string
+          description: string | null
+          id: string
+          k1_code: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          k1_code?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          k1_code?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_k1_clusters_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "content_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_placements: {
         Row: {
           created_at: string
@@ -345,6 +522,65 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      content_sub_verticals: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          vertical_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          vertical_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          vertical_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_sub_verticals_vertical_id_fkey"
+            columns: ["vertical_id"]
+            isOneToOne: false
+            referencedRelation: "content_verticals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_verticals: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       creative_assets: {
         Row: {
@@ -896,6 +1132,7 @@ export type Database = {
         | "negotiation"
         | "closed_won"
         | "closed_lost"
+      inventory_availability: "available" | "pitched" | "booked"
       pipeline_stage:
         | "prospecting"
         | "initial_pitch"
@@ -1050,6 +1287,7 @@ export const Constants = {
         "closed_won",
         "closed_lost",
       ],
+      inventory_availability: ["available", "pitched", "booked"],
       pipeline_stage: [
         "prospecting",
         "initial_pitch",
