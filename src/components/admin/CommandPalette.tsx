@@ -357,11 +357,15 @@ export function CommandPaletteTrigger() {
         });
         document.dispatchEvent(event);
       }}
-      className="flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground bg-muted/50 hover:bg-muted border border-border rounded-md transition-colors"
+      className="flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground bg-muted/50 hover:bg-muted border border-border transition-colors"
+      style={{ borderRadius: '0px' }}
     >
       <Search className="h-3 w-3" />
       <span className="hidden sm:inline">Search...</span>
-      <kbd className="pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-background px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+      <kbd 
+        className="pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 border border-border bg-background px-1.5 font-mono text-[10px] font-medium text-muted-foreground"
+        style={{ borderRadius: '0px' }}
+      >
         {isMac ? '⌘' : 'Ctrl'} K
       </kbd>
     </button>
