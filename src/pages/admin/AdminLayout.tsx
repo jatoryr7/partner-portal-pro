@@ -1,23 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Eye, LogOut, TrendingUp, Package, Users, BarChart3, Activity, Settings } from 'lucide-react';
+import { Eye, LogOut, Activity, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { CommandPalette, CommandPaletteTrigger } from '@/components/admin/CommandPalette';
 import { QuickActionsFAB } from '@/components/admin/QuickActionsFAB';
 import { PortalMapMenu, PortalMapTrigger } from '@/components/admin/PortalMapMenu';
-import { RoleQuickSwitcher, type ViewRole, getRoleConfig } from '@/components/admin/RoleQuickSwitcher';
+import { SmartSelector, type ViewRole, type Workspace, getRoleConfig } from '@/components/admin/SmartSelector';
 import { SessionMonitor } from '@/components/admin/SessionMonitor';
-import { cn } from '@/lib/utils';
-
-type Workspace = 'sales_bd' | 'operations' | 'inventory' | 'partner_success';
-
-const workspaces: { id: Workspace; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'sales_bd', label: 'Sales', icon: TrendingUp },
-  { id: 'operations', label: 'Operations', icon: BarChart3 },
-  { id: 'inventory', label: 'Inventory', icon: Package },
-  { id: 'partner_success', label: 'Success', icon: Users },
-];
 
 export default function AdminLayout() {
   const navigate = useNavigate();
@@ -26,11 +16,32 @@ export default function AdminLayout() {
   
   const [isPortalMapOpen, setIsPortalMapOpen] = useState(false);
   const [activeViewRole, setActiveViewRole] = useState<ViewRole | null>(null);
+  const [activeSubTab, setActiveSubTab] = useState<string>('pacing');
   
   const activeWorkspace = (searchParams.get('workspace') as Workspace) || 'sales_bd';
 
+  // Auto-navigate to correct sub-tab when role changes
+  useEffect(() => {
+    const roleConfig = getRoleConfig(activeViewRole);
+    if (roleConfig?.defaultSubTab) {
+      setActiveSubTab(roleConfig.defaultSubTab);
+    }
+  }, [activeViewRole]);
+
   const handleWorkspaceChange = (workspace: Workspace) => {
     setSearchParams({ workspace });
+  };
+
+  const handleRoleChange = (role: ViewRole | null) => {
+    setActiveViewRole(role);
+    
+    if (role) {
+      const config = getRoleConfig(role);
+      if (config) {
+        // Auto-navigate to the role's default workspace
+        setSearchParams({ workspace: config.defaultWorkspace });
+      }
+    }
   };
 
   const handleViewAsPartner = () => {
@@ -41,12 +52,6 @@ export default function AdminLayout() {
     await signOut();
     navigate('/auth');
   };
-
-  // Filter workspaces based on active role
-  const roleConfig = getRoleConfig(activeViewRole);
-  const visibleWorkspaces = roleConfig
-    ? workspaces.filter(ws => roleConfig.visibleWorkspaces.includes(ws.id))
-    : workspaces;
 
   return (
     <div className="min-h-screen flex flex-col w-full bg-background">
@@ -69,29 +74,6 @@ export default function AdminLayout() {
               </div>
             </div>
           </div>
-
-          {/* Workspace Navigation */}
-          <nav className="hidden md:flex items-center gap-1 bg-secondary/50 p-1 rounded-none">
-            {visibleWorkspaces.map((ws) => {
-              const Icon = ws.icon;
-              const isActive = activeWorkspace === ws.id;
-              return (
-                <button
-                  key={ws.id}
-                  onClick={() => handleWorkspaceChange(ws.id)}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all rounded-none",
-                    isActive
-                      ? "bg-card text-foreground shadow-sm border-b-2 border-primary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-card/50"
-                  )}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{ws.label}</span>
-                </button>
-              );
-            })}
-          </nav>
 
           {/* Global Search & Actions */}
           <div className="flex items-center gap-3">
@@ -129,39 +111,19 @@ export default function AdminLayout() {
         </div>
       </header>
 
-      {/* Role Quick Switcher Bar */}
-      <RoleQuickSwitcher 
+      {/* Smart Selector - Merged Role + Workspace Navigation */}
+      <SmartSelector 
         activeRole={activeViewRole} 
-        onRoleChange={setActiveViewRole} 
+        onRoleChange={handleRoleChange}
+        activeWorkspace={activeWorkspace}
+        onWorkspaceChange={handleWorkspaceChange}
+        onSubTabChange={setActiveSubTab}
       />
-
-      {/* Mobile Workspace Navigation */}
-      <nav className="md:hidden flex items-center gap-1 p-2 bg-card border-b border-border overflow-x-auto">
-        {visibleWorkspaces.map((ws) => {
-          const Icon = ws.icon;
-          const isActive = activeWorkspace === ws.id;
-          return (
-            <button
-              key={ws.id}
-              onClick={() => handleWorkspaceChange(ws.id)}
-              className={cn(
-                "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-all rounded-none whitespace-nowrap",
-                isActive
-                  ? "bg-primary/10 text-primary border-b-2 border-primary"
-                  : "text-muted-foreground"
-              )}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{ws.label}</span>
-            </button>
-          );
-        })}
-      </nav>
 
       {/* Main Content */}
       <main className="flex-1 p-6 overflow-auto">
         <div className="max-w-[1800px] mx-auto">
-          <Outlet context={{ activeViewRole }} />
+          <Outlet context={{ activeViewRole, activeSubTab, setActiveSubTab }} />
         </div>
       </main>
 
