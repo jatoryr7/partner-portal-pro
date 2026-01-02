@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Outlet, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Eye, LogOut, Activity, Settings } from 'lucide-react';
@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { CommandPalette, CommandPaletteTrigger } from '@/components/admin/CommandPalette';
 import { QuickActionsFAB } from '@/components/admin/QuickActionsFAB';
 import { PortalMapMenu, PortalMapTrigger } from '@/components/admin/PortalMapMenu';
-import { SmartSelector, type ViewRole, type Workspace, getRoleConfig } from '@/components/admin/SmartSelector';
+import { SmartSelector, type ViewRole, type Workspace, getRoleConfig, getVisibleSubTabs } from '@/components/admin/SmartSelector';
 import { SessionMonitor } from '@/components/admin/SessionMonitor';
 
 export default function AdminLayout() {
@@ -15,10 +15,18 @@ export default function AdminLayout() {
   const { signOut } = useAuth();
   
   const [isPortalMapOpen, setIsPortalMapOpen] = useState(false);
-  const [activeViewRole, setActiveViewRole] = useState<ViewRole | null>(null);
+  const [activeViewRole, setActiveViewRole] = useState<ViewRole | null>(() => {
+    const urlRole = searchParams.get('role') as ViewRole | null;
+    return urlRole || null;
+  });
   const [activeSubTab, setActiveSubTab] = useState<string>('pacing');
   
   const activeWorkspace = (searchParams.get('workspace') as Workspace) || 'sales_bd';
+
+  // Calculate visible sub-tab count for UI reduction badge
+  const visibleSubTabCount = useMemo(() => {
+    return getVisibleSubTabs(activeViewRole).length;
+  }, [activeViewRole]);
 
   // Auto-navigate to correct sub-tab when role changes
   useEffect(() => {
@@ -29,7 +37,9 @@ export default function AdminLayout() {
   }, [activeViewRole]);
 
   const handleWorkspaceChange = (workspace: Workspace) => {
-    setSearchParams({ workspace });
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('workspace', workspace);
+    setSearchParams(newParams);
   };
 
   const handleRoleChange = (role: ViewRole | null) => {
@@ -39,8 +49,16 @@ export default function AdminLayout() {
       const config = getRoleConfig(role);
       if (config) {
         // Auto-navigate to the role's default workspace
-        setSearchParams({ workspace: config.defaultWorkspace });
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('workspace', config.defaultWorkspace);
+        newParams.set('role', role);
+        setSearchParams(newParams);
       }
+    } else {
+      // Clear role from URL
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('role');
+      setSearchParams(newParams);
     }
   };
 
@@ -118,12 +136,13 @@ export default function AdminLayout() {
         activeWorkspace={activeWorkspace}
         onWorkspaceChange={handleWorkspaceChange}
         onSubTabChange={setActiveSubTab}
+        visibleSubTabCount={visibleSubTabCount}
       />
 
       {/* Main Content */}
       <main className="flex-1 p-6 overflow-auto">
         <div className="max-w-[1800px] mx-auto">
-          <Outlet context={{ activeViewRole, activeSubTab, setActiveSubTab }} />
+          <Outlet context={{ activeViewRole, activeSubTab, setActiveSubTab, activeWorkspace }} />
         </div>
       </main>
 
