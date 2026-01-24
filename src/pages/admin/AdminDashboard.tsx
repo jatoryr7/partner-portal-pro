@@ -1,3 +1,5 @@
+import TrackingBar from '@/components/admin/dashboard/TrackingBar';
+import UnifiedSubmissions from '@/components/admin/dashboard/UnifiedSubmissions';
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -52,6 +54,17 @@ function normalizeWorkspace(param: string | null): TeamWorkspace {
 }
 
 export default function AdminDashboard() {
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">Command Center</h1>
+        <p className="text-muted-foreground mt-1">
+          Unified view of all campaigns and submissions across all channels
+        </p>
+      </div>
+
+      <TrackingBar />
+      <UnifiedSubmissions />
   const [searchParams, setSearchParams] = useSearchParams();
   const workspaceParam = searchParams.get('workspace');
   const [activeWorkspace, setActiveWorkspace] = useState<TeamWorkspace>(() => normalizeWorkspace(workspaceParam));
