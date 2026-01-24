@@ -1,10 +1,20 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { componentTagger } = require('lovable-tagger');
 
-module.exports = (env, argv) => {
+module.exports = async (env, argv) => {
   const isProduction = argv.mode === 'production';
   const isDevelopment = !isProduction;
+
+  // Dynamic import for Lovable Tagger (only in development)
+  let componentTagger = null;
+  if (isDevelopment) {
+    try {
+      const Lovable = await import('lovable-tagger');
+      componentTagger = Lovable.componentTagger;
+    } catch (error) {
+      console.warn('Lovable Tagger not available:', error.message);
+    }
+  }
 
   return {
     mode: isProduction ? 'production' : 'development',
@@ -120,8 +130,8 @@ module.exports = (env, argv) => {
             }
           : false,
       }),
-      // lovable-tagger plugin (Vite-specific, disabled for Webpack)
-      // Uncomment and adapt if needed: ...(isDevelopment ? [componentTagger()] : []),
+      // Lovable Tagger plugin (only in development)
+      ...(isDevelopment && componentTagger ? [componentTagger()] : []),
     ].filter(Boolean),
     devServer: {
       host: '::',
