@@ -2,23 +2,25 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
-// Pages
-import Auth from "./pages/Auth";
-import RoleRouter from "./pages/RoleRouter";
 import NotFound from "./pages/NotFound";
 
-// Public pages
+// ─── Public Zone (/)
+import PublicBrandDirectory from "./pages/public/PublicBrandDirectory";
 import BrandIntegrityPortal from "./pages/public/BrandIntegrityPortal";
-import PublicBrandDirectory from "./pages/public/BrandDirectory";
-import BrandProfile from "./pages/public/BrandProfile";
 
-// Admin pages
+// ─── Partner Zone (/partner/*)
+import PartnerDashboard from "./pages/partner/PartnerDashboard";
+import PartnerLogin from "./pages/partner/PartnerLogin";
+import { OnboardingWizard } from "./components/OnboardingWizard";
+
+// ─── Admin Zone (/admin/*)
+import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import StakeholderDashboard from "./pages/admin/StakeholderDashboard";
@@ -34,11 +36,7 @@ import NewsletterView from "./pages/admin/NewsletterView";
 import ContentMarketingView from "./pages/admin/ContentMarketingView";
 import AdminSettings from "./pages/admin/AdminSettings";
 import ExternalAccessHub from "./components/admin/ExternalAccessHub";
-
-// Partner pages
-import PartnerDashboard from "./pages/partner/PartnerDashboard";
-
-// Internal Dashboard
+import MedicalReviewPage from "./pages/admin/MedicalReviewPage";
 import InternalDashboard from "./pages/InternalDashboard";
 
 const queryClient = new QueryClient();
@@ -53,38 +51,36 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <Routes>
-                {/* Public auth routes */}
-                <Route path="/auth/admin" element={<Auth />} />
-                <Route path="/auth/partner" element={<Auth />} />
-                <Route path="/auth" element={<Auth />} />
-                
-                {/* Public Brand Integrity Portal */}
+                {/* ═══ PUBLIC ZONE (/) — Index / Public Directory ═══ */}
+                <Route path="/" element={<PublicBrandDirectory />} />
                 <Route path="/brand-application" element={<BrandIntegrityPortal />} />
-                
-                {/* Public Brand Directory */}
-                <Route path="/brands" element={<PublicBrandDirectory />} />
-                <Route path="/brands/:id" element={<BrandProfile />} />
-                
-                {/* Role-based router */}
-                <Route path="/" element={<RoleRouter />} />
-                
-                {/* Partner routes */}
-                <Route path="/partner" element={
-                  <ProtectedRoute requiredRole="partner">
-                    <ErrorBoundary>
-                      <PartnerDashboard />
-                    </ErrorBoundary>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Admin routes */}
-                <Route path="/admin" element={
-                  <ProtectedRoute requiredRole="admin">
-                    <ErrorBoundary>
-                      <AdminLayout />
-                    </ErrorBoundary>
-                  </ProtectedRoute>
-                }>
+
+                {/* ═══ PARTNER ZONE (/partner/*) ═══ */}
+                <Route path="/partner/login" element={<PartnerLogin />} />
+                <Route path="/partner/onboarding" element={<OnboardingWizard />} />
+                <Route
+                  path="/partner"
+                  element={
+                    <ProtectedRoute requiredRole="partner">
+                      <ErrorBoundary>
+                        <PartnerDashboard />
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* ═══ ADMIN ZONE (/admin/*) — AdminLayout wraps nested routes ═══ */}
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <ErrorBoundary>
+                        <AdminLayout />
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                >
                   <Route index element={<AdminDashboard />} />
                   <Route path="queue" element={<AdminQueue />} />
                   <Route path="submission/:id" element={<SubmissionReview />} />
@@ -99,17 +95,16 @@ const App = () => (
                   <Route path="content-marketing" element={<ContentMarketingView />} />
                   <Route path="settings" element={<AdminSettings />} />
                   <Route path="external-hub" element={<ExternalAccessHub />} />
+                  <Route path="medical-review" element={<MedicalReviewPage />} />
+                  <Route path="internal-dashboard" element={<InternalDashboard />} />
                 </Route>
-                
-                {/* Internal Dashboard - Command Center */}
-                <Route path="/internal-dashboard" element={
-                  <ProtectedRoute requiredRole="admin">
-                    <ErrorBoundary>
-                      <InternalDashboard />
-                    </ErrorBoundary>
-                  </ProtectedRoute>
-                } />
-                
+
+                {/* Legacy redirects */}
+                <Route path="/auth/admin" element={<Navigate to="/admin/login" replace />} />
+                <Route path="/auth/partner" element={<Navigate to="/partner/login" replace />} />
+                <Route path="/auth" element={<Navigate to="/admin/login" replace />} />
+                <Route path="/internal-dashboard" element={<Navigate to="/admin/internal-dashboard" replace />} />
+
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

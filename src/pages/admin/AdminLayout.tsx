@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Outlet, useNavigate, useSearchParams } from 'react-router-dom';
+import { Outlet, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Eye, LogOut, Activity, Settings } from 'lucide-react';
+import { Eye, LogOut, Activity, Settings, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
 import { CommandPalette, CommandPaletteTrigger } from '@/components/admin/CommandPalette';
 import { QuickActionsFAB } from '@/components/admin/QuickActionsFAB';
 import { PortalMapMenu, PortalMapTrigger } from '@/components/admin/PortalMapMenu';
@@ -11,6 +12,7 @@ import { SessionMonitor } from '@/components/admin/SessionMonitor';
 
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { signOut } = useAuth();
   
@@ -128,6 +130,28 @@ export default function AdminLayout() {
           </div>
         </div>
       </header>
+
+      {/* Top Navigation Ribbon - Primary Navigation Items */}
+      <nav className="border-b border-border bg-card/50">
+        <div className="max-w-[1800px] mx-auto px-6">
+          <div className="flex items-center gap-1 h-12">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/admin/medical-review')}
+              className={cn(
+                "rounded-none h-9 px-4 gap-2",
+                location.pathname === '/admin/medical-review'
+                  ? "bg-[#1ABC9C]/10 text-[#1ABC9C] border-b-2 border-[#1ABC9C] font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Shield className="h-4 w-4" />
+              Medical Review
+            </Button>
+          </div>
+        </div>
+      </nav>
 
       {/* Smart Selector - Merged Role + Workspace Navigation */}
       <SmartSelector 

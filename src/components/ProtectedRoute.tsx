@@ -1,4 +1,4 @@
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
@@ -10,6 +10,7 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const { user, roles, activeRole, loading } = useAuth();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const isPreviewMode = searchParams.get('preview') === 'true';
 
   if (loading) {
@@ -21,7 +22,9 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    // No session: redirect to role-specific login (e.g. /admin -> /admin/login)
+    const loginPath = requiredRole === 'admin' ? '/admin/login' : '/partner/login';
+    return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
   // If user has multiple roles but hasn't selected one, redirect to role selector
