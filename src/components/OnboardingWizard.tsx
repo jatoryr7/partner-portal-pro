@@ -1,24 +1,30 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Building2, Users, Palette, Calendar } from "lucide-react";
+import { Check, Building2, Users, Palette, Calendar, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StepCompanyInfo } from "./steps/StepCompanyInfo";
+import { StepChannelSelection } from "./steps/StepChannelSelection";
 import { StepCreativeAssets } from "./steps/StepCreativeAssets";
 import { StepStakeholders } from "./steps/StepStakeholders";
 import { StepSummary } from "./steps/StepSummary";
 import { PartnerData, initialPartnerData } from "@/types/partner";
 
 // Re-export types for backward compatibility
-export { type PartnerData, type Stakeholder, type ChannelData } from "@/types/partner";
+export { type PartnerData, type Stakeholder, type ChannelData, type ChannelKey } from "@/types/partner";
+
+interface OnboardingWizardProps {
+  onComplete?: () => void;
+}
 
 const steps = [
   { id: 1, title: "Company Info", icon: Building2 },
-  { id: 2, title: "Creative Assets", icon: Palette },
-  { id: 3, title: "Stakeholders", icon: Users },
-  { id: 4, title: "Review & Book", icon: Calendar },
+  { id: 2, title: "Channels", icon: Package },
+  { id: 3, title: "Creative Assets", icon: Palette },
+  { id: 4, title: "Stakeholders", icon: Users },
+  { id: 5, title: "Review & Book", icon: Calendar },
 ];
 
-export function OnboardingWizard() {
+export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [partnerData, setPartnerData] = useState<PartnerData>(initialPartnerData);
 
@@ -43,7 +49,7 @@ export function OnboardingWizard() {
   const progress = calculateProgress();
 
   const handleNext = () => {
-    if (currentStep < 4) setCurrentStep(currentStep + 1);
+    if (currentStep < 5) setCurrentStep(currentStep + 1);
   };
 
   const handleBack = () => {
@@ -152,7 +158,7 @@ export function OnboardingWizard() {
               />
             )}
             {currentStep === 2 && (
-              <StepCreativeAssets
+              <StepChannelSelection
                 data={partnerData}
                 onUpdate={updatePartnerData}
                 onNext={handleNext}
@@ -160,7 +166,7 @@ export function OnboardingWizard() {
               />
             )}
             {currentStep === 3 && (
-              <StepStakeholders
+              <StepCreativeAssets
                 data={partnerData}
                 onUpdate={updatePartnerData}
                 onNext={handleNext}
@@ -168,9 +174,18 @@ export function OnboardingWizard() {
               />
             )}
             {currentStep === 4 && (
+              <StepStakeholders
+                data={partnerData}
+                onUpdate={updatePartnerData}
+                onNext={handleNext}
+                onBack={handleBack}
+              />
+            )}
+            {currentStep === 5 && (
               <StepSummary
                 data={partnerData}
                 onBack={handleBack}
+                onComplete={onComplete}
               />
             )}
           </motion.div>

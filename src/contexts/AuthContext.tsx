@@ -7,11 +7,15 @@ type AppRole = 'admin' | 'partner';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  role: AppRole | null;
+  roles: AppRole[];
+  activeRole: AppRole | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  setActiveRole: (role: AppRole) => void;
+  // Keep 'role' for backward compatibility
+  role: AppRole | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,26 +23,42 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [role, setRole] = useState<AppRole | null>(null);
+  const [roles, setRoles] = useState<AppRole[]>([]);
+  const [activeRole, setActiveRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserRole = async (userId: string) => {
+  const fetchUserRoles = async (userId: string) => {
     const { data, error } = await supabase
       .from('user_roles')
       .select('role')
-      .eq('user_id', userId)
-      .single();
+      .eq('user_id', userId);
     
-    if (data && !error) {
-      setRole(data.role as AppRole);
+    if (data && !error && data.length > 0) {
+      const userRoles = data.map(r => r.role as AppRole);
+      setRoles(userRoles);
+      
+      // Check if there's a stored preference
+      const storedRole = localStorage.getItem('activeRole') as AppRole | null;
+      if (storedRole && userRoles.includes(storedRole)) {
+        setActiveRole(storedRole);
+      } else if (userRoles.length === 1) {
+        // Auto-select if only one role
+        setActiveRole(userRoles[0]);
+      }
+      // If multiple roles and no stored preference, activeRole stays null (will show selector)
     } else {
-      setRole('partner'); // Default to partner if no role found
+      setRoles(['partner']); // Default to partner if no role found
+      setActiveRole('partner');
     }
+  };
+
+  const handleSetActiveRole = (role: AppRole) => {
+    setActiveRole(role);
+    localStorage.setItem('activeRole', role);
   };
 
   useEffect(() => {
     let isMounted = true;
-    let roleFetchAbort = false;
 
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -49,18 +69,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Use async/await instead of setTimeout to avoid race conditions
-          roleFetchAbort = false;
-          try {
-            await fetchUserRole(session.user.id);
-          } catch (error) {
-            console.error('Error fetching user role:', error);
-            if (isMounted && !roleFetchAbort) {
-              setRole('partner'); // Default fallback
+          // Defer the role fetch to avoid deadlock
+          setTimeout(() => {
+            if (isMounted) {
+              fetchUserRoles(session.user.id);
             }
-          }
+          }, 0);
         } else {
-          setRole(null);
+          setRoles([]);
+          setActiveRole(null);
         }
         if (isMounted) {
           setLoading(false);
@@ -76,12 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserRole(session.user.id).catch((error) => {
-          console.error('Error fetching user role on initial load:', error);
-          if (isMounted) {
-            setRole('partner'); // Default fallback
-          }
-        });
+        fetchUserRoles(session.user.id);
       }
       if (isMounted) {
         setLoading(false);
@@ -90,7 +102,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       isMounted = false;
-      roleFetchAbort = true;
       subscription.unsubscribe();
     };
   }, []);
@@ -120,14 +131,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    localStorage.removeItem('activeRole');
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
-    setRole(null);
+    setRoles([]);
+    setActiveRole(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, role, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      roles,
+      activeRole,
+      loading, 
+      signIn, 
+      signUp, 
+      signOut,
+      setActiveRole: handleSetActiveRole,
+      // Backward compatibility
+      role: activeRole,
+    }}>
       {children}
     </AuthContext.Provider>
   );

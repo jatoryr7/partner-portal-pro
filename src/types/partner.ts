@@ -1,3 +1,5 @@
+export type ChannelKey = "native" | "paidSocialSearch" | "media" | "newsletter" | "contentMarketing";
+
 export interface PartnerData {
   companyName: string;
   submissionDate: Date;
@@ -5,6 +7,7 @@ export interface PartnerData {
   primaryContact: ContactInfo;
   secondaryContact: ContactInfo | null;
   stakeholders: Stakeholder[];
+  selectedChannels: ChannelKey[];
   channels: ChannelData;
 }
 
@@ -131,5 +134,6 @@ export const initialPartnerData: PartnerData = {
   primaryContact: { name: "", email: "" },
   secondaryContact: null,
   stakeholders: [],
+  selectedChannels: [],
   channels: initialChannelData,
 };
