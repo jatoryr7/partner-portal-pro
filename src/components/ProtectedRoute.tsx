@@ -27,9 +27,15 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
     return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
-  // If user has multiple roles but hasn't selected one, redirect to role selector
-  if (roles.length > 1 && !activeRole) {
-    return <Navigate to="/" replace />;
+  // If user has the required role, always allow access (render children). Never redirect to /.
+  if (requiredRole && roles.includes(requiredRole)) {
+    return <>{children}</>;
+  }
+
+  // Roles not yet loaded or empty: redirect to login so they can re-auth
+  if (requiredRole && roles.length === 0) {
+    const loginPath = requiredRole === 'admin' ? '/admin/login' : '/partner/login';
+    return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
   // Allow admins to preview partner portal
@@ -37,19 +43,19 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
     return <>{children}</>;
   }
 
-  // Check if user has the required role
-  if (requiredRole && !roles.includes(requiredRole)) {
-    // Redirect based on what roles they have
+  // User lacks required role: redirect to their zone (admin -> /admin, partner -> /partner)
+  if (requiredRole) {
     if (roles.includes('admin')) {
       return <Navigate to="/admin" replace />;
     }
-    return <Navigate to="/partner" replace />;
+    if (roles.includes('partner')) {
+      return <Navigate to="/partner" replace />;
+    }
   }
 
-  // Check if user is trying to access a route that doesn't match their active role
-  if (requiredRole && activeRole && requiredRole !== activeRole) {
-    // They have the role but it's not their active selection - allow but they might want to switch
-    // For now, allow access if they have the role
+  // Multi-role user without activeRole and not hitting a role-specific route: show role selector at /
+  if (roles.length > 1 && !activeRole) {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

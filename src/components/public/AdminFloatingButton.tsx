@@ -13,7 +13,7 @@ export function AdminFloatingButton() {
         size="lg"
       >
         <ArrowUpRight className="h-4 w-4 mr-2" />
-        Go to Admin Dashboard
+        Go to Command Center
       </Button>
     </div>
   );
