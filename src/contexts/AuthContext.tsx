@@ -59,7 +59,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let isMounted = true;
-    let roleFetchAbort = false;
 
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -70,19 +69,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Use async/await instead of setTimeout to avoid race conditions
-          roleFetchAbort = false;
-          try {
-            await fetchUserRole(session.user.id);
-          } catch (error) {
-            console.error('Error fetching user role:', error);
-            if (isMounted && !roleFetchAbort) {
-              setRole('partner'); // Default fallback
-            }
-          }
           // Defer the role fetch to avoid deadlock
           setTimeout(() => {
-            fetchUserRoles(session.user.id);
+            if (isMounted) {
+              fetchUserRoles(session.user.id);
+            }
           }, 0);
         } else {
           setRoles([]);
@@ -102,22 +93,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserRole(session.user.id).catch((error) => {
-          console.error('Error fetching user role on initial load:', error);
-          if (isMounted) {
-            setRole('partner'); // Default fallback
-          }
-        });
+        fetchUserRoles(session.user.id);
       }
       if (isMounted) {
         setLoading(false);
-        fetchUserRoles(session.user.id);
       }
     });
 
     return () => {
       isMounted = false;
-      roleFetchAbort = true;
       subscription.unsubscribe();
     };
   }, []);
