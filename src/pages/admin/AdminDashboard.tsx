@@ -1,5 +1,3 @@
-import TrackingBar from '@/components/admin/dashboard/TrackingBar';
-import UnifiedSubmissions from '@/components/admin/dashboard/UnifiedSubmissions';
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -14,10 +12,8 @@ import {
   Mail, 
   PenTool,
   CheckCircle2,
-  AlertCircle,
   Clock,
-  DollarSign,
-  TrendingUp
+  DollarSign
 } from 'lucide-react';
 import { TeamWorkspaceToggle, TeamWorkspace } from '@/components/admin/TeamWorkspaceToggle';
 import { MarketingDashboard } from '@/components/admin/workspace/MarketingDashboard';
@@ -27,14 +23,6 @@ import { BusinessDevDashboard } from '@/components/admin/workspace/BusinessDevDa
 import { OperationsDashboard } from '@/components/admin/workspace/OperationsDashboard';
 import { PartnerManagementDashboard } from '@/components/admin/workspace/PartnerManagementDashboard';
 import { ContentInventoryExplorer } from '@/components/admin/workspace/ContentInventoryExplorer';
-
-interface ChannelStats {
-  channel: string;
-  total: number;
-  pending: number;
-  approved: number;
-  needsRevision: number;
-}
 
 // Map legacy workspace names to current ones
 const WORKSPACE_ALIASES: Record<string, TeamWorkspace> = {
@@ -54,17 +42,6 @@ function normalizeWorkspace(param: string | null): TeamWorkspace {
 }
 
 export default function AdminDashboard() {
-  return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Command Center</h1>
-        <p className="text-muted-foreground mt-1">
-          Unified view of all campaigns and submissions across all channels
-        </p>
-      </div>
-
-      <TrackingBar />
-      <UnifiedSubmissions />
   const [searchParams, setSearchParams] = useSearchParams();
   const workspaceParam = searchParams.get('workspace');
   const [activeWorkspace, setActiveWorkspace] = useState<TeamWorkspace>(() => normalizeWorkspace(workspaceParam));
