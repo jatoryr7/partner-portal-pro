@@ -1,15 +1,15 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -18,8 +18,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Loader2, DollarSign } from 'lucide-react';
 import { INDUSTRIES, LEAD_SOURCES } from '@/config/inputOptions';
+
+const leadFormSchema = z.object({
+  estimated_deal_value: z
+    .string()
+    .min(1, 'Deal value is required')
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+      message: 'Must be a positive number',
+    }),
+  company_name: z.string().min(1, 'Company name is required').max(100),
+  contact_name: z.string().min(1, 'Contact name is required').max(100),
+  contact_email: z.string().email('Invalid email address').max(255),
+  contact_phone: z.string().max(20).optional(),
+  website: z.string().url('Invalid URL').optional().or(z.literal('')),
+  industry: z.string().optional(),
+  notes: z.string().max(1000).optional(),
+  source: z.string().optional(),
+});
+
+type LeadFormData = z.infer<typeof leadFormSchema>;
 
 interface LeadCaptureDialogProps {
   open: boolean;
@@ -44,193 +71,267 @@ export function LeadCaptureDialog({
   onSubmit,
   isLoading,
 }: LeadCaptureDialogProps) {
-  const [formData, setFormData] = useState({
-    company_name: '',
-    contact_name: '',
-    contact_email: '',
-    contact_phone: '',
-    website: '',
-    industry: '',
-    estimated_deal_value: '',
-    notes: '',
-    source: '',
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({
-      ...formData,
-      estimated_deal_value: formData.estimated_deal_value 
-        ? parseFloat(formData.estimated_deal_value) 
-        : undefined,
-    });
-  };
-
-  const handleClose = () => {
-    setFormData({
+  const form = useForm<LeadFormData>({
+    resolver: zodResolver(leadFormSchema),
+    defaultValues: {
+      estimated_deal_value: '',
       company_name: '',
       contact_name: '',
       contact_email: '',
       contact_phone: '',
       website: '',
       industry: '',
-      estimated_deal_value: '',
       notes: '',
       source: '',
+    },
+  });
+
+  const handleFormSubmit = (data: LeadFormData) => {
+    onSubmit({
+      company_name: data.company_name,
+      contact_name: data.contact_name,
+      contact_email: data.contact_email,
+      estimated_deal_value: parseFloat(data.estimated_deal_value),
+      contact_phone: data.contact_phone || undefined,
+      website: data.website || undefined,
+      industry: data.industry || undefined,
+      notes: data.notes || undefined,
+      source: data.source || undefined,
     });
+  };
+
+  const handleClose = () => {
+    form.reset();
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Add New Lead</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto bg-background border-border p-8">
+        <DialogHeader className="space-y-3 pb-4">
+          <DialogTitle className="text-xl font-bold tracking-tight">
+            Add New Lead
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground">
             Capture a new brand prospect to add to your sales pipeline.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            {/* Company Name */}
-            <div className="col-span-2">
-              <Label htmlFor="company_name">Company Name *</Label>
-              <Input
-                id="company_name"
-                value={formData.company_name}
-                onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                placeholder="Acme Corporation"
-                required
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+            {/* Primary Field - Deal Value at Top */}
+            <FormField
+              control={form.control}
+              name="estimated_deal_value"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-bold text-foreground">
+                    Estimated Deal Value *
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        <DollarSign className="h-4 w-4" />
+                      </div>
+                      <Input
+                        {...field}
+                        type="number"
+                        min="0"
+                        step="1000"
+                        placeholder="50,000"
+                        className="pl-9 h-12 text-lg font-medium"
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Company Name - Full Width */}
+            <FormField
+              control={form.control}
+              name="company_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-bold text-foreground">
+                    Company Name *
+                  </FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Acme Corporation" className="h-11" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Contact Info - 2 Column Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="contact_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-bold text-foreground">
+                      Contact Name *
+                    </FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="John Smith" className="h-11" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="contact_email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-bold text-foreground">
+                      Contact Email *
+                    </FormLabel>
+                    <FormControl>
+                      <Input {...field} type="email" placeholder="john@acme.com" className="h-11" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="contact_phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-bold text-foreground">
+                      Contact Phone
+                    </FormLabel>
+                    <FormControl>
+                      <Input {...field} type="tel" placeholder="+1 (555) 123-4567" className="h-11" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="website"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-bold text-foreground">
+                      Website
+                    </FormLabel>
+                    <FormControl>
+                      <Input {...field} type="url" placeholder="https://acme.com" className="h-11" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
 
-            {/* Contact Name */}
-            <div>
-              <Label htmlFor="contact_name">Contact Name *</Label>
-              <Input
-                id="contact_name"
-                value={formData.contact_name}
-                onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
-                placeholder="John Smith"
-                required
+            {/* Dropdowns - 2 Column Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="industry"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-bold text-foreground">
+                      Industry
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-11">
+                          <SelectValue placeholder="Select industry" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {INDUSTRIES.map((industry) => (
+                          <SelectItem key={industry} value={industry}>
+                            {industry}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="source"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-bold text-foreground">
+                      Lead Source
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-11">
+                          <SelectValue placeholder="How did you find them?" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {LEAD_SOURCES.map((source) => (
+                          <SelectItem key={source} value={source}>
+                            {source}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
 
-            {/* Contact Email */}
-            <div>
-              <Label htmlFor="contact_email">Contact Email *</Label>
-              <Input
-                id="contact_email"
-                type="email"
-                value={formData.contact_email}
-                onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
-                placeholder="john@acme.com"
-                required
-              />
-            </div>
+            {/* Notes - Full Width */}
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-bold text-foreground">
+                    Notes
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Add any relevant context about this prospect..."
+                      rows={3}
+                      className="resize-none"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-            {/* Contact Phone */}
-            <div>
-              <Label htmlFor="contact_phone">Contact Phone</Label>
-              <Input
-                id="contact_phone"
-                type="tel"
-                value={formData.contact_phone}
-                onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
-                placeholder="+1 (555) 123-4567"
-              />
-            </div>
-
-            {/* Website */}
-            <div>
-              <Label htmlFor="website">Website</Label>
-              <Input
-                id="website"
-                type="url"
-                value={formData.website}
-                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                placeholder="https://acme.com"
-              />
-            </div>
-
-            {/* Industry */}
-            <div>
-              <Label htmlFor="industry">Industry</Label>
-              <Select
-                value={formData.industry}
-                onValueChange={(value) => setFormData({ ...formData, industry: value })}
+            {/* Full-width Submit Button */}
+            <div className="pt-4 space-y-3">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-12 text-base font-semibold"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select industry" />
-                </SelectTrigger>
-                <SelectContent>
-                  {INDUSTRIES.map((industry) => (
-                    <SelectItem key={industry} value={industry}>
-                      {industry}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Source */}
-            <div>
-              <Label htmlFor="source">Lead Source</Label>
-              <Select
-                value={formData.source}
-                onValueChange={(value) => setFormData({ ...formData, source: value })}
+                {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Add to Pipeline
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleClose}
+                className="w-full h-10 text-muted-foreground"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="How did you find them?" />
-                </SelectTrigger>
-                <SelectContent>
-                  {LEAD_SOURCES.map((source) => (
-                    <SelectItem key={source} value={source}>
-                      {source}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                Cancel
+              </Button>
             </div>
-
-            {/* Estimated Deal Value */}
-            <div className="col-span-2">
-              <Label htmlFor="estimated_deal_value">Estimated Deal Value ($)</Label>
-              <Input
-                id="estimated_deal_value"
-                type="number"
-                min="0"
-                step="1000"
-                value={formData.estimated_deal_value}
-                onChange={(e) => setFormData({ ...formData, estimated_deal_value: e.target.value })}
-                placeholder="50000"
-              />
-            </div>
-
-            {/* Notes */}
-            <div className="col-span-2">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Add any relevant context about this prospect..."
-                rows={3}
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Add to Pipeline
-            </Button>
-          </DialogFooter>
-        </form>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
