@@ -20,7 +20,8 @@ import {
   XCircle, 
   AlertCircle,
   ExternalLink,
-  FileText
+  FileText,
+  Plus
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Brand360Drawer } from '@/components/admin/Brand360Drawer';
@@ -151,6 +152,26 @@ export function IntakeQueue() {
     if (brandId) {
       setSelectedBrandId(brandId);
       setIsDrawerOpen(true);
+    }
+  };
+
+  const handleCreateReview = async (submission: UnifiedSubmission) => {
+    if (!submission.matchedBrandId) return;
+    
+    try {
+      await createReview.mutateAsync({ partner_id: submission.matchedBrandId });
+      toast({
+        title: 'Review created',
+        description: `Medical review initiated for ${submission.brandName}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['public-review-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['brand-applications-intake'] });
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Failed to create medical review',
+        variant: 'destructive',
+      });
     }
   };
 
