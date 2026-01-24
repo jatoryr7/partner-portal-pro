@@ -10,6 +10,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 // Pages
 import Auth from "./pages/Auth";
 import RoleRouter from "./pages/RoleRouter";
+import SelectRole from "./pages/SelectRole";
 import NotFound from "./pages/NotFound";
 
 // Admin pages
@@ -37,6 +38,9 @@ const App = () => (
             <Routes>
               {/* Public routes */}
               <Route path="/auth" element={<Auth />} />
+              
+              {/* Role selection */}
+              <Route path="/select-role" element={<SelectRole />} />
               
               {/* Role-based router */}
               <Route path="/" element={<RoleRouter />} />
