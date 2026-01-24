@@ -1,4 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -7,56 +10,56 @@
 @layer base {
   :root {
     /* Healthcare Analytics - Clinical Light Theme */
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    --background: 240 4% 95%;
+    --foreground: 240 5% 10%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card: 0 0% 98%;
+    --card-foreground: 240 5% 10%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover: 240 5% 90%;
+    --popover-foreground: 240 5% 10%;
 
     /* Medical Teal / Pulse Blue */
-    --primary: 185 65% 42%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 258 89% 66%;
+    --primary-foreground: 250 100% 97%;
 
     /* Soft clinical secondary */
-    --secondary: 200 25% 94%;
-    --secondary-foreground: 215 25% 25%;
+    --secondary: 240 5% 33%;
+    --secondary-foreground: 0 0% 98%;
 
     /* Muted Sage tones */
-    --muted: 150 15% 92%;
-    --muted-foreground: 215 15% 45%;
+    --muted: 240 4% 83%;
+    --muted-foreground: 240 5% 10%;
 
     /* Pale Sky Blue accent */
-    --accent: 200 45% 85%;
-    --accent-foreground: 215 30% 20%;
+    --accent: 269 100% 98%;
+    --accent-foreground: 270 91% 65%;
 
     /* Urgent Red for critical */
-    --destructive: 0 75% 50%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 85% 97%;
 
-    --border: 210 20% 90%;
-    --input: 210 20% 90%;
-    --ring: 185 65% 42%;
+    --border: 240 4% 83%;
+    --input: 240 4% 83%;
+    --ring: 258 89% 66%;
 
     /* Sharp corners for clinical look */
-    --radius: 0.125rem;
+    --radius: 0.5rem;
 
     /* Healthcare Custom Tokens */
     --healthcare-blue: 185 65% 42%;
     --healthcare-blue-light: 185 55% 95%;
     --healthcare-teal: 175 60% 40%;
     --healthcare-gray: 215 15% 50%;
-    
+
     /* Healing Green for success */
     --success: 155 70% 38%;
     --success-light: 155 60% 94%;
-    
+
     /* Warm Warning */
     --warning: 38 92% 50%;
     --warning-light: 38 90% 95%;
-    
+
     /* Medical Standards Theme Tokens */
     --medical-slate: 210 29% 24%;
     --medical-slate-foreground: 0 0% 100%;
@@ -72,58 +75,88 @@
     --gradient-glass: linear-gradient(135deg, hsla(0, 0%, 100%, 0.9) 0%, hsla(200, 25%, 98%, 0.85) 100%);
 
     /* Clinical Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(215 25% 15% / 0.04);
-    --shadow-md: 0 4px 8px -2px hsl(215 25% 15% / 0.06), 0 2px 4px -2px hsl(215 25% 15% / 0.03);
-    --shadow-lg: 0 12px 28px -8px hsl(215 25% 15% / 0.08), 0 6px 12px -6px hsl(215 25% 15% / 0.04);
+    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
     --shadow-glow: 0 0 24px hsl(185 65% 42% / 0.15);
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 215 25% 25%;
-    --sidebar-primary: 185 65% 42%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 200 25% 96%;
-    --sidebar-accent-foreground: 215 25% 20%;
-    --sidebar-border: 210 20% 92%;
-    --sidebar-ring: 185 65% 42%;
+    --sidebar-foreground: 240 5% 10%;
+    --sidebar-primary: 258 89% 66%;
+    --sidebar-primary-foreground: 250 100% 97%;
+    --sidebar-accent: 240 5% 33%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 4% 83%;
+    --sidebar-ring: 258 89% 66%;
+    --chart-1: 255 91% 76%;
+    --chart-2: 270 95% 75%;
+    --chart-3: 234 89% 73%;
+    --chart-4: 258 89% 66%;
+    --chart-5: 240 3% 46%;
+    --sidebar: 0 0% 98%;
+    --font-sans: 'Montserrat', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    --font-serif: 'Cormorant Garamond', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
+    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+    --tracking-normal: 0em;
+    --spacing: 0.25rem;
   }
 
   .dark {
-    --background: 215 30% 8%;
-    --foreground: 210 20% 95%;
+    --background: 240 5% 10%;
+    --foreground: 0 0% 98%;
 
-    --card: 215 28% 11%;
-    --card-foreground: 210 20% 95%;
+    --card: 240 3% 15%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 215 28% 11%;
-    --popover-foreground: 210 20% 95%;
+    --popover: 240 5% 26%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 185 70% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 255 91% 76%;
+    --primary-foreground: 261 72% 22%;
 
-    --secondary: 215 25% 16%;
-    --secondary-foreground: 210 20% 90%;
+    --secondary: 240 3% 46%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 215 20% 18%;
-    --muted-foreground: 215 15% 55%;
+    --muted: 240 3% 46%;
+    --muted-foreground: 0 0% 98%;
 
-    --accent: 185 50% 25%;
-    --accent-foreground: 185 70% 85%;
+    --accent: 273 86% 20%;
+    --accent-foreground: 270 95% 75%;
 
-    --destructive: 0 65% 55%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 85% 97%;
 
-    --border: 215 20% 18%;
-    --input: 215 20% 18%;
-    --ring: 185 70% 50%;
+    --border: 240 5% 33%;
+    --input: 240 5% 33%;
+    --ring: 255 91% 76%;
 
     --sidebar-background: 215 28% 10%;
-    --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 185 70% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 25% 14%;
-    --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 215 20% 16%;
-    --sidebar-ring: 185 70% 50%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 255 91% 76%;
+    --sidebar-primary-foreground: 261 72% 22%;
+    --sidebar-accent: 270 95% 75%;
+    --sidebar-accent-foreground: 273 86% 20%;
+    --sidebar-border: 240 5% 33%;
+    --sidebar-ring: 255 91% 76%;
+    --chart-1: 252 94% 85%;
+    --chart-2: 269 97% 85%;
+    --chart-3: 229 93% 81%;
+    --chart-4: 255 91% 76%;
+    --chart-5: 240 3% 46%;
+    --sidebar: 240 3% 15%;
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
+    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
   }
 }
 
