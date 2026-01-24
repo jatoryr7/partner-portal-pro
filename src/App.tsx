@@ -37,11 +37,8 @@ import ContentMarketingView from "./pages/admin/ContentMarketingView";
 import AdminSettings from "./pages/admin/AdminSettings";
 import ExternalAccessHub from "./components/admin/ExternalAccessHub";
 import MedicalReviewPage from "./pages/admin/MedicalReviewPage";
-import {
-  AdminAnalyticsPage,
-  AdminFinancePage,
-  AdminGatewaysPage,
-} from "./pages/admin/AdminPlaceholderPage";
+import { AdminAnalyticsPage, AdminFinancePage } from "./pages/admin/AdminPlaceholderPage";
+import AdminGatewaysPage from "./pages/admin/AdminGatewaysPage";
 import InternalDashboard from "./pages/InternalDashboard";
 
 const queryClient = new QueryClient();

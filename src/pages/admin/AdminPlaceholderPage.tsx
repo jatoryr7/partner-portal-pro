@@ -50,11 +50,3 @@ export function AdminFinancePage() {
   );
 }
 
-export function AdminGatewaysPage() {
-  return (
-    <AdminPlaceholderPage
-      title="External Gateways"
-      description="Third-party access and API integrations. This section is coming soon."
-    />
-  );
-}

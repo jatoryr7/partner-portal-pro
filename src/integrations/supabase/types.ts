@@ -1591,6 +1591,21 @@ export type Database = {
         }
         Relationships: []
       }
+      system_settings: {
+        Row: {
+          key: string
+          value: unknown
+        }
+        Insert: {
+          key: string
+          value?: unknown
+        }
+        Update: {
+          key?: string
+          value?: unknown
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1602,6 +1617,16 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      get_partner_access_log: {
+        Args: Record<string, never>
+        Returns: {
+          user_id: string
+          email: string | null
+          organization_name: string | null
+          last_sign_in_at: string | null
+          partner_id: string
+        }[]
       }
     }
     Enums: {
