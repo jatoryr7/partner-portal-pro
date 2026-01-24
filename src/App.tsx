@@ -11,6 +11,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 // Pages
 import Auth from "./pages/Auth";
 import RoleRouter from "./pages/RoleRouter";
+import SelectRole from "./pages/SelectRole";
 import NotFound from "./pages/NotFound";
 
 // Public pages
@@ -42,6 +43,51 @@ import InternalDashboard from "./pages/InternalDashboard";
 const queryClient = new QueryClient();
 
 const App = () => (
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/auth" element={<Auth />} />
+              
+              {/* Role selection */}
+              <Route path="/select-role" element={<SelectRole />} />
+              
+              {/* Role-based router */}
+              <Route path="/" element={<RoleRouter />} />
+              
+              {/* Partner routes */}
+              <Route path="/partner" element={
+                <ProtectedRoute requiredRole="partner">
+                  <PartnerDashboard />
+                </ProtectedRoute>
+              } />
+              
+              {/* Admin routes */}
+              <Route path="/admin" element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<AdminDashboard />} />
+                <Route path="native" element={<NativeView />} />
+                <Route path="paid-social" element={<PaidSocialView />} />
+                <Route path="media" element={<MediaView />} />
+                <Route path="newsletter" element={<NewsletterView />} />
+                <Route path="content-marketing" element={<ContentMarketingView />} />
+              </Route>
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
   <ErrorBoundary showDetails>
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
