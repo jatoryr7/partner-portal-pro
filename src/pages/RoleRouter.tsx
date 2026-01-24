@@ -1,9 +1,10 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { RoleSelector } from '@/components/RoleSelector';
 import { Loader2 } from 'lucide-react';
 
 export default function RoleRouter() {
-  const { user, role, loading } = useAuth();
+  const { user, roles, activeRole, loading, setActiveRole } = useAuth();
 
   if (loading) {
     return (
@@ -17,8 +18,13 @@ export default function RoleRouter() {
     return <Navigate to="/auth" replace />;
   }
 
-  // Route based on role
-  if (role === 'admin') {
+  // If user has multiple roles and hasn't selected one yet, show the selector
+  if (roles.length > 1 && !activeRole) {
+    return <RoleSelector roles={roles} onSelect={setActiveRole} />;
+  }
+
+  // Route based on active role
+  if (activeRole === 'admin') {
     return <Navigate to="/admin" replace />;
   }
 
