@@ -8,6 +8,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Building2, 
@@ -15,9 +16,11 @@ import {
   Briefcase, 
   FileText, 
   AlertCircle,
+  AlertTriangle,
   CheckCircle2,
   Clock,
-  DollarSign
+  DollarSign,
+  Link as LinkIcon
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { calculateGrade } from '@/hooks/useMedicalReviews';
@@ -51,7 +54,6 @@ export function Brand360Drawer({ brandId, isOpen, onClose }: Brand360DrawerProps
   const { data: brand } = useQuery({
     queryKey: ['brand-360', brandId],
     queryFn: async () => {
-      // Try partners table first
       const { data: partnerData, error: partnerError } = await supabase
         .from('partners')
         .select('*')
@@ -59,20 +61,14 @@ export function Brand360Drawer({ brandId, isOpen, onClose }: Brand360DrawerProps
         .maybeSingle();
       
       if (partnerError) throw partnerError;
-      if (partnerData) return partnerData;
-      
-      // Fallback: try organizations table if partners doesn't have it
-      const { data: orgData, error: orgError } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('id', brandId)
-        .maybeSingle();
-      
-      if (orgError) throw orgError;
-      return orgData;
+      return partnerData;
     },
     enabled: !!brandId,
   });
+
+  // Extract affiliate info from brand
+  const affiliateLink = brand?.affiliate_link;
+  const commissionRate = null; // Can be added to partners table if needed
 
   // Fetch medical review
   const { data: medicalReview } = useQuery({
@@ -129,6 +125,9 @@ export function Brand360Drawer({ brandId, isOpen, onClose }: Brand360DrawerProps
         transparency: medicalReview.transparency_score,
       })
     : null;
+
+  // Check if there's a high-grade brand with no active deal
+  const hasHighGradeNoDeal = medicalGrade && ['A', 'B'].includes(medicalGrade) && activeDeals.length === 0;
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
