@@ -87,6 +87,11 @@ interface AdUnit {
   booked_start_date: string | null;
   booked_end_date: string | null;
   notes: string | null;
+  article?: {
+    id: string;
+    title: string;
+    url: string | null;
+  } | null;
 }
 
 const statusConfig: Record<InventoryAvailability, { color: string; label: string; bgClass: string }> = {

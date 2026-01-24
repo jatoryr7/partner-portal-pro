@@ -15,6 +15,8 @@ import NotFound from "./pages/NotFound";
 
 // Public pages
 import BrandIntegrityPortal from "./pages/public/BrandIntegrityPortal";
+import PublicBrandDirectory from "./pages/public/BrandDirectory";
+import BrandProfile from "./pages/public/BrandProfile";
 
 // Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -58,6 +60,10 @@ const App = () => (
                 
                 {/* Public Brand Integrity Portal */}
                 <Route path="/brand-application" element={<BrandIntegrityPortal />} />
+                
+                {/* Public Brand Directory */}
+                <Route path="/brands" element={<PublicBrandDirectory />} />
+                <Route path="/brands/:id" element={<BrandProfile />} />
                 
                 {/* Role-based router */}
                 <Route path="/" element={<RoleRouter />} />
