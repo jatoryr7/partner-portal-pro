@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { format, startOfQuarter, endOfQuarter, addQuarters } from 'date-fns';
 import { 
   Search, 
@@ -21,7 +30,10 @@ import {
   Video,
   Layout,
   Send,
-  ExternalLink
+  ExternalLink,
+  Package,
+  DollarSign,
+  AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -98,6 +110,7 @@ export function ContentInventoryExplorer() {
   const [selectedK1, setSelectedK1] = useState<string | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'all' | 'leaderboards' | 'newsletters'>('all');
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: startOfQuarter(new Date()),
     to: endOfQuarter(new Date()),
@@ -195,6 +208,26 @@ export function ContentInventoryExplorer() {
     enabled: !!selectedArticle,
   });
 
+  // Fetch all ad units with article information for table view
+  const { data: allAdUnits = [] } = useQuery({
+    queryKey: ['content-all-ad-units'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('content_ad_units')
+        .select(`
+          *,
+          article:content_articles (
+            id,
+            title,
+            url
+          )
+        `)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as AdUnit[];
+    },
+  });
+
   // Search K1 clusters by name or code
   const { data: searchResults = [] } = useQuery({
     queryKey: ['k1-search', searchQuery],
@@ -282,6 +315,39 @@ export function ContentInventoryExplorer() {
     setSearchQuery('');
   };
 
+  // Filter ad units based on view mode
+  const filteredAdUnits = useMemo(() => {
+    if (viewMode === 'all') return allAdUnits;
+    if (viewMode === 'leaderboards') {
+      return allAdUnits.filter(unit => unit.unit_type === 'leaderboard');
+    }
+    if (viewMode === 'newsletters') {
+      return allAdUnits.filter(unit => unit.unit_type === 'newsletter');
+    }
+    return allAdUnits;
+  }, [allAdUnits, viewMode]);
+
+  // Calculate stats for filtered ad units
+  const stats = useMemo(() => {
+    const available = filteredAdUnits.filter(u => u.status === 'available').length;
+    const pitched = filteredAdUnits.filter(u => u.status === 'pitched').length;
+    const booked = filteredAdUnits.filter(u => u.status === 'booked').length;
+    const totalStock = filteredAdUnits.length;
+    const inventoryValue = filteredAdUnits
+      .filter(u => u.status === 'available' && u.rate)
+      .reduce((sum, u) => sum + (u.rate || 0), 0);
+    const lowStock = totalStock > 0 && available < totalStock * 0.2;
+
+    return {
+      available,
+      pitched,
+      booked,
+      totalStock,
+      inventoryValue,
+      lowStock,
+    };
+  }, [filteredAdUnits]);
+
   const renderStatusIndicator = (status: InventoryAvailability) => {
     const config = statusConfig[status];
     return (
@@ -342,8 +408,163 @@ export function ContentInventoryExplorer() {
         </div>
       </div>
 
+      {/* View Mode Tabs */}
+      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'all' | 'leaderboards' | 'newsletters')}>
+        <TabsList className="rounded-none">
+          <TabsTrigger value="all" className="rounded-none">All Ad Units</TabsTrigger>
+          <TabsTrigger value="leaderboards" className="rounded-none">Leaderboards</TabsTrigger>
+          <TabsTrigger value="newsletters" className="rounded-none">Newsletters</TabsTrigger>
+        </TabsList>
+
+        {/* Stats Dashboard */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+          <Card className="rounded-none">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Availability</p>
+                  <p className="text-2xl font-semibold">{stats.available}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {stats.pitched} Pitched • {stats.booked} Booked
+                  </p>
+                </div>
+                <Package className="h-8 w-8 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="rounded-none">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Stock Levels</p>
+                  <p className="text-2xl font-semibold">{stats.totalStock}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Total Units</p>
+                </div>
+                <Package className="h-8 w-8 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="rounded-none">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Inventory Value</p>
+                  <p className="text-2xl font-semibold">${stats.inventoryValue.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Available Units</p>
+                </div>
+                <DollarSign className="h-8 w-8 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className={cn("rounded-none", stats.lowStock && "border-amber-500/50 bg-amber-500/5")}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  {stats.lowStock ? (
+                    <>
+                      <p className="text-lg font-semibold text-amber-600">Low Stock</p>
+                      <p className="text-xs text-muted-foreground mt-1">Alert</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-lg font-semibold text-emerald-600">Healthy</p>
+                      <p className="text-xs text-muted-foreground mt-1">Stock Level</p>
+                    </>
+                  )}
+                </div>
+                {stats.lowStock ? (
+                  <AlertTriangle className="h-8 w-8 text-amber-600" />
+                ) : (
+                  <Package className="h-8 w-8 text-muted-foreground" />
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Ad Units Table */}
+        <TabsContent value={viewMode} className="mt-6">
+          <Card className="rounded-none">
+            <CardHeader>
+              <CardTitle>
+                {viewMode === 'all' && 'All Ad Units'}
+                {viewMode === 'leaderboards' && 'Leaderboard Ad Units'}
+                {viewMode === 'newsletters' && 'Newsletter Ad Units'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow className="rounded-none">
+                    <TableHead className="rounded-none bg-white">Article</TableHead>
+                    <TableHead className="rounded-none bg-white">Type</TableHead>
+                    <TableHead className="rounded-none bg-white">Status</TableHead>
+                    <TableHead className="rounded-none bg-white">Rate</TableHead>
+                    <TableHead className="rounded-none bg-white">Dates</TableHead>
+                    <TableHead className="rounded-none bg-white">Notes</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAdUnits.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                        No ad units found for this view
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredAdUnits.map((unit) => {
+                      const config = adUnitConfig[unit.unit_type] || { icon: FileText, label: unit.unit_type };
+                      const UnitIcon = config.icon;
+                      const unitStatus = statusConfig[unit.status];
+
+                      return (
+                        <TableRow key={unit.id} className="rounded-none">
+                          <TableCell className="font-medium">
+                            {unit.article?.title || 'Unknown Article'}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <UnitIcon className="h-4 w-4 text-muted-foreground" />
+                              <span>{config.label}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant="outline" 
+                              className={cn("rounded-none", unitStatus.bgClass, unitStatus.color)}
+                            >
+                              {unitStatus.label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {unit.rate ? `$${unit.rate.toLocaleString()}` : '-'}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {unit.booked_start_date && unit.booked_end_date ? (
+                              `${format(new Date(unit.booked_start_date), 'MMM d')} - ${format(new Date(unit.booked_end_date), 'MMM d')}`
+                            ) : unit.pitched_at ? (
+                              `Pitched ${format(new Date(unit.pitched_at), 'MMM d')}`
+                            ) : (
+                              '-'
+                            )}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
+                            {unit.notes || '-'}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
       {/* Filter Bar */}
-      <Card>
+      <Card className="rounded-none">
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
             {/* Search */}
@@ -525,7 +746,7 @@ export function ContentInventoryExplorer() {
               const unitStatus = statusConfig[unit.status];
 
               return (
-                <Card key={unit.id} className={cn('border', unitStatus.bgClass)}>
+                <Card key={unit.id} className={cn('border rounded-none', unitStatus.bgClass)}>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
