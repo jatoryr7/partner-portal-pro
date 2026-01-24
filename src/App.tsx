@@ -35,6 +35,9 @@ import ExternalAccessHub from "./components/admin/ExternalAccessHub";
 // Partner pages
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
 
+// Internal Dashboard
+import InternalDashboard from "./pages/InternalDashboard";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -85,6 +88,13 @@ const App = () => (
                 <Route path="settings" element={<AdminSettings />} />
                 <Route path="external-hub" element={<ExternalAccessHub />} />
               </Route>
+              
+              {/* Internal Dashboard - Command Center */}
+              <Route path="/internal-dashboard" element={
+                <ProtectedRoute requiredRole="admin">
+                  <InternalDashboard />
+                </ProtectedRoute>
+              } />
               
               <Route path="*" element={<NotFound />} />
             </Routes>
