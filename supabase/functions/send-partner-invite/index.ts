@@ -1,8 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-
-
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,6 +22,75 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // ========== AUTHENTICATION CHECK ==========
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      console.error("No authorization header provided");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - No authorization header" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Create Supabase client with the user's JWT
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      {
+        global: {
+          headers: { Authorization: authHeader },
+        },
+      }
+    );
+
+    // Verify user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error("Auth error:", authError?.message || "No user found");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - Invalid token" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // ========== AUTHORIZATION CHECK - Admin role required ==========
+    const { data: roles, error: rolesError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin");
+
+    if (rolesError) {
+      console.error("Role check error:", rolesError.message);
+      return new Response(
+        JSON.stringify({ error: "Failed to verify permissions" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    if (!roles || roles.length === 0) {
+      console.error("User lacks admin role:", user.id);
+      return new Response(
+        JSON.stringify({ error: "Forbidden - Admin access required" }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    console.log("Admin user authorized:", user.id);
+
+    // ========== VALIDATE REQUEST BODY ==========
     const { contactName, contactEmail, companyName }: PartnerInviteRequest = await req.json();
 
     if (!contactName || !contactEmail || !companyName) {
@@ -35,6 +103,19 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(contactEmail)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid email format" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // ========== SEND EMAIL ==========
     // Get the app URL from environment or use a default
     const appUrl = Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') 
       || 'https://your-app.lovable.app';
