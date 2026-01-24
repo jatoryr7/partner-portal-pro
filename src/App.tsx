@@ -37,6 +37,11 @@ import ContentMarketingView from "./pages/admin/ContentMarketingView";
 import AdminSettings from "./pages/admin/AdminSettings";
 import ExternalAccessHub from "./components/admin/ExternalAccessHub";
 import MedicalReviewPage from "./pages/admin/MedicalReviewPage";
+import {
+  AdminAnalyticsPage,
+  AdminFinancePage,
+  AdminGatewaysPage,
+} from "./pages/admin/AdminPlaceholderPage";
 import InternalDashboard from "./pages/InternalDashboard";
 
 const queryClient = new QueryClient();
@@ -96,6 +101,9 @@ const App = () => (
                   <Route path="settings" element={<AdminSettings />} />
                   <Route path="external-hub" element={<ExternalAccessHub />} />
                   <Route path="medical-review" element={<MedicalReviewPage />} />
+                  <Route path="analytics" element={<AdminAnalyticsPage />} />
+                  <Route path="finance" element={<AdminFinancePage />} />
+                  <Route path="gateways" element={<AdminGatewaysPage />} />
                   <Route path="internal-dashboard" element={<InternalDashboard />} />
                 </Route>
 
