@@ -112,6 +112,7 @@ const App = () => (
                 <Route path="/auth/partner" element={<Navigate to="/partner/login" replace />} />
                 <Route path="/auth" element={<Navigate to="/admin/login" replace />} />
                 <Route path="/internal-dashboard" element={<Navigate to="/admin/internal-dashboard" replace />} />
+                <Route path="/admin/admin-settings" element={<Navigate to="/admin/settings" replace />} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
