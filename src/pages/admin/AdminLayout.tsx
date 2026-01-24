@@ -110,7 +110,7 @@ export default function AdminLayout() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/auth');
+    navigate('/admin/login');
   };
 
   const isAdminRoot = location.pathname === '/admin' || location.pathname === '/admin/';
