@@ -1,0 +1,34 @@
+name: Production Build
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+        # We only need Node 20 now.
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install Dependencies
+      # "npm ci" is faster and safer than "npm install" for servers
+      run: npm ci
+
+    - name: Build Project
+      # "CI=false" prevents tiny warnings from crashing the build
+      run: CI=false npm run build
