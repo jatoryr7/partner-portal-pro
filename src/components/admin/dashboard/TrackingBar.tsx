@@ -57,6 +57,19 @@ export default function TrackingBar() {
 
       if (partnersError) throw partnersError;
 
+      // Guard against null/undefined partners
+      if (!partners || !Array.isArray(partners)) {
+        return CHANNELS.map(({ key, label, icon }) => ({
+          channel: key,
+          label,
+          icon,
+          totalCampaigns: 0,
+          assetsReceived: 0,
+          totalAssetsExpected: 0,
+          urgentCount: 0,
+        }));
+      }
+
       // Calculate stats per channel
       const channelStatsMap = new Map<string, {
         campaigns: number;
@@ -81,7 +94,7 @@ export default function TrackingBar() {
         partnersCountedPerChannel.set(key, new Set());
       });
 
-      partners?.forEach((partner) => {
+      partners.forEach((partner) => {
         const launchDate = partner.target_launch_date 
           ? new Date(partner.target_launch_date) 
           : null;

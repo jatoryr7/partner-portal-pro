@@ -37,36 +37,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    let isMounted = true;
+    let roleFetchAbort = false;
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        if (!isMounted) return;
+
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Defer the role fetch to avoid deadlock
-          setTimeout(() => {
-            fetchUserRole(session.user.id);
-          }, 0);
+          // Use async/await instead of setTimeout to avoid race conditions
+          roleFetchAbort = false;
+          try {
+            await fetchUserRole(session.user.id);
+          } catch (error) {
+            console.error('Error fetching user role:', error);
+            if (isMounted && !roleFetchAbort) {
+              setRole('partner'); // Default fallback
+            }
+          }
         } else {
           setRole(null);
         }
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     );
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserRole(session.user.id);
+        fetchUserRole(session.user.id).catch((error) => {
+          console.error('Error fetching user role on initial load:', error);
+          if (isMounted) {
+            setRole('partner'); // Default fallback
+          }
+        });
       }
-      setLoading(false);
+      if (isMounted) {
+        setLoading(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      roleFetchAbort = true;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {

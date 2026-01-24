@@ -177,19 +177,58 @@ export default function UnifiedSubmissions() {
   };
 
   const handleSlackClick = (email: string | null) => {
-    if (email) {
-      // Open Slack with email (this is a placeholder - actual implementation depends on your Slack setup)
-      window.open(`slack://user?email=${encodeURIComponent(email)}`, '_blank');
+    if (!email) {
       toast({
-        title: 'Opening Slack',
-        description: `Opening conversation with ${email}`,
+        title: 'No email available',
+        description: 'Contact email is not available for this partner.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      // Open Slack with email (this is a placeholder - actual implementation depends on your Slack setup)
+      const slackWindow = window.open(`slack://user?email=${encodeURIComponent(email)}`, '_blank');
+      if (!slackWindow || slackWindow.closed || typeof slackWindow.closed === 'undefined') {
+        // Fallback if Slack app is not installed
+        toast({
+          title: 'Slack not available',
+          description: 'Please open Slack manually and search for this contact.',
+          variant: 'default',
+        });
+      } else {
+        toast({
+          title: 'Opening Slack',
+          description: `Opening conversation with ${email}`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error opening Slack',
+        description: 'Unable to open Slack. Please try again.',
+        variant: 'destructive',
       });
     }
   };
 
   const handleEmailClick = (email: string | null) => {
-    if (email) {
+    if (!email) {
+      toast({
+        title: 'No email available',
+        description: 'Contact email is not available for this partner.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
       window.location.href = `mailto:${email}`;
+    } catch (error) {
+      toast({
+        title: 'Error opening email',
+        description: 'Unable to open email client. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -311,7 +350,24 @@ export default function UnifiedSubmissions() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      onClick={() => window.open(folderUrl, '_blank')}
+                                      onClick={() => {
+                                        try {
+                                          const newWindow = window.open(folderUrl, '_blank');
+                                          if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                                            toast({
+                                              title: 'Unable to open link',
+                                              description: 'Please check your popup blocker settings.',
+                                              variant: 'destructive',
+                                            });
+                                          }
+                                        } catch (error) {
+                                          toast({
+                                            title: 'Error opening folder',
+                                            description: 'Unable to open asset folder.',
+                                            variant: 'destructive',
+                                          });
+                                        }
+                                      }}
                                       title="View Assets"
                                     >
                                       <FolderOpen className="h-4 w-4" />
@@ -321,7 +377,24 @@ export default function UnifiedSubmissions() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      onClick={() => window.open(affiliateLink, '_blank')}
+                                      onClick={() => {
+                                        try {
+                                          const newWindow = window.open(affiliateLink, '_blank');
+                                          if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                                            toast({
+                                              title: 'Unable to open link',
+                                              description: 'Please check your popup blocker settings.',
+                                              variant: 'destructive',
+                                            });
+                                          }
+                                        } catch (error) {
+                                          toast({
+                                            title: 'Error opening link',
+                                            description: 'Unable to open affiliate link.',
+                                            variant: 'destructive',
+                                          });
+                                        }
+                                      }}
                                       title="Open Affiliate Link"
                                     >
                                       <LinkIcon className="h-4 w-4" />
