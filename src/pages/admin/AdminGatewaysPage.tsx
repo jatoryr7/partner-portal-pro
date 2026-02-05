@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -36,14 +36,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-export type PartnerAccessLogRow = {
-  user_id: string;
-  email: string | null;
-  organization_name: string | null;
-  last_sign_in_at: string | null;
-  partner_id: string;
-};
-
 const tabTriggerClass =
   "rounded-none gap-2 data-[state=active]:bg-[#1ABC9C]/10 data-[state=active]:text-[#1ABC9C] data-[state=active]:border-b-2 data-[state=active]:border-[#1ABC9C]";
 
@@ -55,26 +47,6 @@ export default function AdminGatewaysPage() {
   const [invitePartnerId, setInvitePartnerId] = useState("");
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteLoading, setInviteLoading] = useState(false);
-
-  const { data: maintenanceRow } = useQuery({
-    queryKey: ["system_settings", "maintenance_mode"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("system_settings")
-        .select("key, value")
-        .eq("key", "maintenance_mode")
-        .single();
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const maintenanceValue = maintenanceRow?.value as boolean | undefined;
-  const maintenance = maintenanceValue ?? false;
-
-  useEffect(() => {
-    if (maintenanceValue !== undefined) setMaintenanceMode(maintenance);
-  }, [maintenanceValue, maintenance]);
 
   const { data: partners = [], isLoading: partnersLoading } = useQuery({
     queryKey: ["partners-for-invite"],
@@ -88,35 +60,37 @@ export default function AdminGatewaysPage() {
     },
   });
 
+  // Get partner users by joining user_roles with profiles
   const { data: accessLog = [], isLoading: accessLogLoading, refetch: refetchAccessLog } = useQuery({
     queryKey: ["partner-access-log"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_partner_access_log");
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select(`
+          user_id,
+          role,
+          profiles!inner(email, full_name)
+        `)
+        .eq("role", "partner");
+      
       if (error) throw error;
-      return (data ?? []) as PartnerAccessLogRow[];
-    },
-  });
-
-  const updateMaintenanceMutation = useMutation({
-    mutationFn: async (value: boolean) => {
-      const { error } = await supabase
-        .from("system_settings")
-        .upsert({ key: "maintenance_mode", value }, { onConflict: "key" });
-      if (error) throw error;
-    },
-    onSuccess: (_, value) => {
-      queryClient.invalidateQueries({ queryKey: ["system_settings", "maintenance_mode"] });
-      setMaintenanceMode(value);
-      toast({ title: "Saved", description: value ? "Maintenance mode is on." : "Maintenance mode is off." });
-    },
-    onError: (e: Error) => {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      
+      // Transform data to expected format
+      return (data ?? []).map((row: any) => ({
+        user_id: row.user_id,
+        email: row.profiles?.email ?? null,
+        organization_name: row.profiles?.full_name ?? null,
+        last_sign_in_at: null,
+      }));
     },
   });
 
   const handleMaintenanceToggle = (checked: boolean) => {
     setMaintenanceMode(checked);
-    updateMaintenanceMutation.mutate(checked);
+    toast({ 
+      title: checked ? "Maintenance Mode On" : "Maintenance Mode Off", 
+      description: "This is a UI toggle only. Full implementation coming soon." 
+    });
   };
 
   const handleInvitePartner = async () => {
@@ -217,7 +191,6 @@ export default function AdminGatewaysPage() {
                   id="maintenance-mode"
                   checked={maintenanceMode}
                   onCheckedChange={handleMaintenanceToggle}
-                  disabled={updateMaintenanceMutation.isPending}
                   className="data-[state=checked]:bg-[#1ABC9C]"
                 />
               </div>
@@ -320,7 +293,7 @@ export default function AdminGatewaysPage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      accessLog.map((row) => (
+                      accessLog.map((row: any) => (
                         <TableRow key={row.user_id} className="border-border">
                           <TableCell className="py-2 px-4 text-sm">{row.email ?? "—"}</TableCell>
                           <TableCell className="py-2 px-4 text-sm">{row.organization_name ?? "—"}</TableCell>
