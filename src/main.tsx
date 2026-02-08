@@ -5,14 +5,15 @@ import { GlobalErrorBoundary } from "./components/ui/GlobalErrorBoundary";
 import "./index.css";
 
 // Prevent ResizeObserver crashes (e.g. from Recharts/Radix) on fast window resize
-const originalResizeObserver = window.ResizeObserver;
-window.ResizeObserver = function (callback: ResizeObserverCallback) {
-  const wrappedCallback: ResizeObserverCallback = (entries, observer) => {
-    window.requestAnimationFrame(() => {
-      callback(entries, observer);
+const OriginalResizeObserver = window.ResizeObserver;
+(window as any).ResizeObserver = class extends OriginalResizeObserver {
+  constructor(callback: ResizeObserverCallback) {
+    super((entries, observer) => {
+      window.requestAnimationFrame(() => {
+        callback(entries, observer);
+      });
     });
-  };
-  return new originalResizeObserver(wrappedCallback);
+  }
 };
 
 createRoot(document.getElementById("root")!).render(
