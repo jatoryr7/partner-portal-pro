@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Outlet, useNavigate, useSearchParams, useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Eye, LogOut, Activity, Settings, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Eye, LogOut, Activity, Settings, Shield, ChevronLeft, ChevronRight, FolderOpen } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { CommandPalette, CommandPaletteTrigger } from '@/components/admin/CommandPalette';
@@ -190,6 +190,16 @@ export default function AdminLayout() {
           <div className="flex items-center gap-3">
             <CommandPaletteTrigger />
             
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/directory')}
+              className="text-muted-foreground hover:text-foreground rounded-none gap-1.5"
+              title="View Public Directory"
+            >
+              <FolderOpen className="w-4 h-4" />
+              <span className="hidden sm:inline">Directory</span>
+            </Button>
             <Button
               variant="ghost"
               size="icon"

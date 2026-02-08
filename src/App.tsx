@@ -10,7 +10,8 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 
 import NotFound from "./pages/NotFound";
 
-// ─── Public Zone (/)
+// ─── Public Zone
+import PortalGateway from "./pages/public/PortalGateway";
 import PublicBrandDirectory from "./pages/public/PublicBrandDirectory";
 import BrandIntegrityPortal from "./pages/public/BrandIntegrityPortal";
 
@@ -53,8 +54,9 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <Routes>
-                {/* ═══ PUBLIC ZONE (/) — Index / Public Directory ═══ */}
-                <Route path="/" element={<PublicBrandDirectory />} />
+                {/* ═══ PUBLIC ZONE — Gateway at /, directory at /directory ═══ */}
+                <Route path="/" element={<PortalGateway />} />
+                <Route path="/directory" element={<PublicBrandDirectory />} />
                 <Route path="/brand-application" element={<BrandIntegrityPortal />} />
 
                 {/* ═══ PARTNER ZONE (/partner/*) ═══ */}

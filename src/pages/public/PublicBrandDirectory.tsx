@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Building2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Search, Building2, Home } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AdminFloatingButton } from '@/components/public/AdminFloatingButton';
 import { calculateGrade } from '@/hooks/useMedicalReviews';
@@ -34,53 +35,62 @@ export default function PublicBrandDirectory() {
   const { user, roles } = useAuth();
   const isAdmin = user && roles && roles.includes('admin');
 
-  // Fetch partners with their medical reviews
+  // Fetch partners with their medical reviews — only when this route is mounted (/directory).
+  // Stable queryKey, try/catch to avoid retry loops, staleTime to prevent refetch storms.
   const { data: brands = [], isLoading } = useQuery({
     queryKey: ['public-brands-directory'],
     queryFn: async () => {
-      const { data: partners, error: partnersError } = await supabase
-        .from('partners')
-        .select('id, company_name, created_at')
-        .order('company_name');
+      try {
+        const { data: partners, error: partnersError } = await supabase
+          .from('partners')
+          .select('id, company_name, created_at')
+          .order('company_name');
 
-      if (partnersError) throw partnersError;
+        if (partnersError) throw partnersError;
 
-      // Fetch medical reviews for each partner
-      const { data: reviews, error: reviewsError } = await supabase
-        .from('medical_reviews')
-        .select('partner_id, clinical_evidence_score, safety_score, transparency_score, overall_grade, status')
-        .in('status', ['approved', 'in_medical_review']);
+        const { data: reviews, error: reviewsError } = await supabase
+          .from('medical_reviews')
+          .select('partner_id, clinical_evidence_score, safety_score, transparency_score, overall_grade, status')
+          .in('status', ['approved', 'in_medical_review']);
 
-      if (reviewsError) throw reviewsError;
+        if (reviewsError) throw reviewsError;
 
-      // Map reviews to partners
-      const reviewMap = new Map();
-      reviews?.forEach((review: any) => {
-        if (!reviewMap.has(review.partner_id)) {
-          reviewMap.set(review.partner_id, review);
-        }
-      });
+        const reviewMap = new Map();
+        reviews?.forEach((review: any) => {
+          if (review?.partner_id != null && !reviewMap.has(review.partner_id)) {
+            reviewMap.set(review.partner_id, review);
+          }
+        });
 
-      return partners?.map((partner: any) => {
-        const review = reviewMap.get(partner.id);
-        const grade = review?.overall_grade || 
-          (review ? calculateGrade({
-            clinical: review.clinical_evidence_score,
-            safety: review.safety_score,
-            transparency: review.transparency_score,
-          }) : null);
-
-        return {
-          ...partner,
-          medicalGrade: grade,
-          medicalStatus: review?.status,
-        };
-      }) || [];
+        return (partners ?? []).map((partner: any) => {
+          const review = partner?.id != null ? reviewMap.get(partner.id) : null;
+          const grade =
+            review?.overall_grade ??
+            (review
+              ? calculateGrade({
+                  clinical: review.clinical_evidence_score,
+                  safety: review.safety_score,
+                  transparency: review.transparency_score,
+                })
+              : null);
+          return {
+            ...partner,
+            medicalGrade: grade,
+            medicalStatus: review?.status,
+          };
+        });
+      } catch (err) {
+        console.error('PublicBrandDirectory fetch error:', err);
+        return [];
+      }
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes — avoid refetch storms
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 
   const filteredBrands = brands.filter((brand: any) =>
-    brand.company_name.toLowerCase().includes(searchQuery.toLowerCase())
+    (brand?.company_name ?? '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -99,24 +109,24 @@ export default function PublicBrandDirectory() {
                 Search verified healthcare brands and their medical review scores
               </p>
             </div>
-            {!isAdmin && (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => window.location.href = '/partner/login'}
-                  className="rounded-none"
-                >
-                  Partner Login
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => window.location.href = '/admin/login'}
-                  className="rounded-none"
-                >
-                  Admin Login
-                </Button>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" asChild className="rounded-none text-muted-foreground">
+                <Link to="/">
+                  <Home className="h-4 w-4 mr-1" />
+                  Portal home
+                </Link>
+              </Button>
+              {!isAdmin && (
+                <>
+                  <Button variant="outline" size="sm" asChild className="rounded-none">
+                    <Link to="/partner/login">Partner Login</Link>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild className="rounded-none">
+                    <Link to="/admin/login">Admin Login</Link>
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>
