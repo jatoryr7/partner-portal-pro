@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 /**
  * Static gateway — no auth, no database, no async. Renders instantly.
  */
-export default function PortalGateway() {
+const PortalGateway = React.forwardRef<HTMLDivElement>(function PortalGateway(_props, _ref) {
   const handleHardReset = async () => {
     await supabase.auth.signOut();
     localStorage.clear();
@@ -89,4 +90,6 @@ export default function PortalGateway() {
       </button>
     </>
   );
-}
+});
+
+export default PortalGateway;
