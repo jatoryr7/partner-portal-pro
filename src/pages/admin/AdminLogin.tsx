@@ -31,7 +31,15 @@ export default function AdminLogin() {
       ? fromRaw
       : '/admin';
 
+  console.log('[AdminLogin] Render:', {
+    loading,
+    user: user ? { id: user.id, email: user.email } : null,
+    roles,
+    from,
+  });
+
   if (loading) {
+    console.log('[AdminLogin] ⏳ Auth loading — showing spinner');
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -40,6 +48,7 @@ export default function AdminLogin() {
   }
 
   if (user && roles.includes('admin')) {
+    console.log('[AdminLogin] ✅ Already admin — redirecting to', from);
     return <Navigate to={from} replace />;
   }
 
@@ -59,6 +68,7 @@ export default function AdminLogin() {
     e.preventDefault();
     if (!validateForm()) return;
     
+    console.log('[AdminLogin] 🔐 Login form submitted', { email });
     setIsLoading(true);
     const { error } = await signIn(email, password);
     
@@ -71,6 +81,7 @@ export default function AdminLogin() {
         variant: 'destructive',
       });
     } else {
+      console.log('[AdminLogin] ✅ Supabase signIn success — checking roles');
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data: userRoles } = await supabase
@@ -78,9 +89,11 @@ export default function AdminLogin() {
           .select('role')
           .eq('user_id', user.id);
         
+        console.log('[AdminLogin] Fetched roles:', userRoles);
         const hasAdminRole = userRoles?.some(r => r.role === 'admin');
         
         if (!hasAdminRole) {
+          console.log('[AdminLogin] ❌ No admin role — signing out');
           toast({
             title: 'Access Denied',
             description: 'This login is for administrators only.',
@@ -88,15 +101,20 @@ export default function AdminLogin() {
           });
           await supabase.auth.signOut();
         } else {
+          console.log('[AdminLogin] ✅ Admin confirmed — navigating to', from);
           toast({
             title: 'Welcome back!',
             description: 'You have successfully signed in.',
           });
           navigate(from, { replace: true });
+          console.log('[AdminLogin] 🚀 navigate() called');
         }
+      } else {
+        console.log('[AdminLogin] ⚠️ getUser returned null after signIn');
       }
     }
     setIsLoading(false);
+    console.log('[AdminLogin] handleSignIn complete');
   };
 
   const handleHardReset = async () => {
