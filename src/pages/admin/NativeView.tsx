@@ -2,6 +2,7 @@ import { useOutletContext } from 'react-router-dom';
 import ChannelView from '@/components/admin/ChannelView';
 import { CreativeAssetsDesk } from '@/components/admin/CreativeAssetsDesk';
 import { ChannelOverviewStrip } from '@/components/admin/ChannelOverviewStrip';
+import { CreativeAssetHub } from '@/components/admin/CreativeAssetHub';
 import { AFFILIATE_PLATFORMS } from '@/types/partner';
 import type { ViewRole } from '@/components/admin/SmartSelector';
 
@@ -34,9 +35,9 @@ export default function NativeView() {
         filterOptions={[...AFFILIATE_PLATFORMS]}
       />
       
-      {/* Channel Overview Strip - Resurfaced at bottom */}
+      {/* Creative Asset Hub - Replaces static links with Request Assets */}
       <div className="pt-6 border-t border-border">
-        <ChannelOverviewStrip activeChannel="native" />
+        <CreativeAssetHub channelFilter="native" />
       </div>
     </div>
   );

@@ -1202,7 +1202,9 @@ export type Database = {
       }
       partners: {
         Row: {
+          affiliate_link: string | null
           assigned_manager_id: string | null
+          category: string | null
           company_name: string
           created_at: string
           id: string
@@ -1214,9 +1216,12 @@ export type Database = {
           target_launch_date: string | null
           updated_at: string
           user_id: string
+          website: string | null
         }
         Insert: {
+          affiliate_link?: string | null
           assigned_manager_id?: string | null
+          category?: string | null
           company_name: string
           created_at?: string
           id?: string
@@ -1228,9 +1233,12 @@ export type Database = {
           target_launch_date?: string | null
           updated_at?: string
           user_id: string
+          website?: string | null
         }
         Update: {
+          affiliate_link?: string | null
           assigned_manager_id?: string | null
+          category?: string | null
           company_name?: string
           created_at?: string
           id?: string
@@ -1242,6 +1250,7 @@ export type Database = {
           target_launch_date?: string | null
           updated_at?: string
           user_id?: string
+          website?: string | null
         }
         Relationships: []
       }

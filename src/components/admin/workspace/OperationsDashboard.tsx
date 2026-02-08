@@ -25,7 +25,6 @@ import { CallPrepExport } from '@/components/admin/CallPrepExport';
 import { InsertionOrdersView } from '@/components/admin/operations/InsertionOrdersView';
 import { PerformanceFeedView } from '@/components/admin/operations/PerformanceFeedView';
 import { MonthlyBillablesView } from '@/components/admin/billables/MonthlyBillablesView';
-import { MedicalReviewDesk } from '@/components/admin/medical/MedicalReviewDesk';
 import { getVisibleSubTabs, type ViewRole } from '@/components/admin/SmartSelector';
 import { cn } from '@/lib/utils';
 
@@ -38,7 +37,6 @@ interface OutletContext {
 const allTabs = [
   { id: 'pacing', label: 'Pacing', icon: BarChart3, shortLabel: 'Pacing' },
   { id: 'intelligence', label: 'Intel', icon: Brain, shortLabel: 'Intel' },
-  { id: 'medical', label: 'Medical', icon: Microscope, shortLabel: 'Medical' },
   { id: 'orders', label: 'IOs', icon: FileText, shortLabel: 'IOs' },
   { id: 'performance', label: 'Perf', icon: TrendingUp, shortLabel: 'Perf' },
   { id: 'billables', label: 'Billables', icon: Receipt, shortLabel: 'Billables' },
@@ -296,10 +294,6 @@ export function OperationsDashboard() {
 
         <TabsContent value="intelligence" className="mt-6">
           <AnalystBriefingDesk />
-        </TabsContent>
-
-        <TabsContent value="medical" className="mt-6">
-          <MedicalReviewDesk />
         </TabsContent>
 
         <TabsContent value="orders" className="mt-6">

@@ -205,8 +205,18 @@ export function ActivityFeed({ partnerId, compact = false }: ActivityFeedProps) 
     return email?.slice(0, 2).toUpperCase() || '??';
   };
 
+  // Sanitize and highlight mentions to prevent XSS attacks
   const highlightMentions = (content: string) => {
-    return content.replace(
+    // First escape HTML to prevent XSS
+    const escaped = content
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+    
+    // Then safely highlight mentions
+    return escaped.replace(
       /@(\w+)/g,
       '<span class="text-primary font-medium">@$1</span>'
     );

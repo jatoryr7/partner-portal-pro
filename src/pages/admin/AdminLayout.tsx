@@ -1,16 +1,58 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Outlet, useNavigate, useSearchParams } from 'react-router-dom';
+import { Outlet, useNavigate, useSearchParams, useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Eye, LogOut, Activity, Settings } from 'lucide-react';
+import { Eye, LogOut, Activity, Settings, Shield, ChevronLeft, ChevronRight, FolderOpen } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
 import { CommandPalette, CommandPaletteTrigger } from '@/components/admin/CommandPalette';
 import { QuickActionsFAB } from '@/components/admin/QuickActionsFAB';
 import { PortalMapMenu, PortalMapTrigger } from '@/components/admin/PortalMapMenu';
 import { SmartSelector, type ViewRole, type Workspace, getRoleConfig, getVisibleSubTabs } from '@/components/admin/SmartSelector';
 import { SessionMonitor } from '@/components/admin/SessionMonitor';
 
+/** Path segment → breadcrumb label for admin routes. */
+const SEGMENT_LABELS: Record<string, string> = {
+  admin: 'Command Center',
+  queue: 'Campaign Queue',
+  stakeholders: 'Stakeholders',
+  users: 'User Management',
+  brands: 'Brand Directory',
+  deals: 'Deals CRM',
+  native: 'Native',
+  'paid-social': 'Paid Social',
+  media: 'Media',
+  newsletter: 'Newsletter',
+  'content-marketing': 'Content Marketing',
+  settings: 'Settings',
+  'external-hub': 'External Hub',
+  'medical-review': 'Medical Integrity',
+  analytics: 'Intelligence',
+  finance: 'Financials',
+  gateways: 'External Gateways',
+  'internal-dashboard': 'Internal Dashboard',
+  submission: 'Submission',
+};
+
+function isUuidLike(s: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s) || /^[0-9a-f-]{20,}$/i.test(s);
+}
+
+function buildBreadcrumbs(pathname: string): { path: string; label: string }[] {
+  const segments = pathname.split('/').filter(Boolean);
+  const crumbs: { path: string; label: string }[] = [];
+  let acc = '';
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i];
+    acc += (acc ? '/' : '') + seg;
+    const label = SEGMENT_LABELS[seg] ?? (isUuidLike(seg) ? 'Review' : seg.replace(/-/g, ' '));
+    crumbs.push({ path: '/' + acc, label });
+  }
+  return crumbs;
+}
+
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { signOut } = useAuth();
   
@@ -68,21 +110,72 @@ export default function AdminLayout() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/auth');
+    navigate('/admin/login');
   };
+
+  const isAdminRoot = location.pathname === '/admin' || location.pathname === '/admin/';
+  const breadcrumbs = useMemo(() => buildBreadcrumbs(location.pathname), [location.pathname]);
 
   return (
     <div className="min-h-screen flex flex-col w-full bg-background">
       {/* Top Header Navigation Bar */}
       <header className="h-16 border-b border-border bg-card sticky top-0 z-50 shadow-sm">
         <div className="h-full max-w-[1800px] mx-auto px-6 flex items-center justify-between">
-          {/* Logo, Brand & Portal Map */}
-          <div className="flex items-center gap-4">
+          {/* Navigation control group + Logo, Brand & Portal Map */}
+          <div className="flex items-center gap-4 min-w-0">
             <PortalMapTrigger onClick={() => setIsPortalMapOpen(true)} />
             
             <div className="h-8 w-px bg-border hidden sm:block" />
             
-            <div className="flex items-center gap-3">
+            {/* Back / Forward / Breadcrumbs */}
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className="flex items-center gap-0.5 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn('size-9 rounded-none text-muted-foreground hover:text-[#1ABC9C] hover:bg-[#1ABC9C]/10', isAdminRoot && 'opacity-40 pointer-events-none')}
+                  onClick={() => navigate(-1)}
+                  disabled={isAdminRoot}
+                  title="Back"
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn('size-9 rounded-none text-muted-foreground hover:text-[#1ABC9C] hover:bg-[#1ABC9C]/10', isAdminRoot && 'opacity-40 pointer-events-none')}
+                  onClick={() => navigate(1)}
+                  disabled={isAdminRoot}
+                  title="Forward"
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+              <nav className="flex items-center gap-1.5 min-w-0 truncate text-sm" aria-label="Breadcrumb">
+                {breadcrumbs.map((crumb, i) => {
+                  const isLast = i === breadcrumbs.length - 1;
+                  return (
+                    <span key={crumb.path} className="flex items-center gap-1.5 shrink-0">
+                      {i > 0 && <span className="text-muted-foreground/60">›</span>}
+                      {isLast ? (
+                        <span className="font-medium text-foreground truncate">{crumb.label}</span>
+                      ) : (
+                        <Link
+                          to={crumb.path}
+                          className="text-muted-foreground hover:text-[#1ABC9C] truncate transition-colors"
+                        >
+                          {crumb.label}
+                        </Link>
+                      )}
+                    </span>
+                  );
+                })}
+              </nav>
+            </div>
+            
+            <div className="h-8 w-px bg-border hidden md:block shrink-0" />
+            
+            <div className="flex items-center gap-3 shrink-0">
               <div className="flex items-center justify-center w-9 h-9 rounded-none bg-gradient-to-br from-primary to-healthcare-teal">
                 <Activity className="w-5 h-5 text-primary-foreground" />
               </div>
@@ -97,6 +190,16 @@ export default function AdminLayout() {
           <div className="flex items-center gap-3">
             <CommandPaletteTrigger />
             
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/directory')}
+              className="text-muted-foreground hover:text-foreground rounded-none gap-1.5"
+              title="View Public Directory"
+            >
+              <FolderOpen className="w-4 h-4" />
+              <span className="hidden sm:inline">Directory</span>
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -128,6 +231,28 @@ export default function AdminLayout() {
           </div>
         </div>
       </header>
+
+      {/* Top Navigation Ribbon - Primary Navigation Items */}
+      <nav className="border-b border-border bg-card/50">
+        <div className="max-w-[1800px] mx-auto px-6">
+          <div className="flex items-center gap-1 h-12">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/admin/medical-review')}
+              className={cn(
+                "rounded-none h-9 px-4 gap-2",
+                location.pathname === '/admin/medical-review'
+                  ? "bg-[#1ABC9C]/10 text-[#1ABC9C] border-b-2 border-[#1ABC9C] font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Shield className="h-4 w-4" />
+              Medical Review
+            </Button>
+          </div>
+        </div>
+      </nav>
 
       {/* Smart Selector - Merged Role + Workspace Navigation */}
       <SmartSelector 

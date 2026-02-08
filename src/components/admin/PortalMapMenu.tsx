@@ -25,34 +25,37 @@ const navMap: NavSection[] = [
     icon: <BarChart3 className="w-5 h-5" />,
     links: [
       { name: "Sales Pipeline", path: "/admin/deals", workspace: "sales_bd" },
-      { name: "Brand Submissions", path: "/admin/queue", workspace: "sales_bd" },
-      { name: "Deals CRM", path: "/admin/deals", workspace: "sales_bd" }
+      { name: "Brand Directory", path: "/admin/brands", workspace: "sales_bd" },
+      { name: "Deals CRM", path: "/admin/deals", workspace: "sales_bd" },
+      { name: "Brand Submissions", path: "/admin/queue", workspace: "sales_bd" }
     ]
   },
   {
     category: "Operations & Intelligence",
     icon: <Megaphone className="w-5 h-5" />,
     links: [
-      { name: "Inventory Explorer (K1s)", path: "/admin/queue", workspace: "operations" },
-      { name: "Analyst Briefing Desk", path: "/admin/queue", workspace: "operations" },
-      { name: "Partner Success", path: "/admin/stakeholders", workspace: "partner_success" }
+      { name: "Internal Dashboard", path: "/admin/internal-dashboard", workspace: "operations" },
+      { name: "Stakeholder Management", path: "/admin/stakeholders", workspace: "partner_success" },
+      { name: "User Management", path: "/admin/users" }
     ]
   },
   {
     category: "Medical Integrity",
     icon: <Microscope className="w-5 h-5" />,
     links: [
-      { name: "Medical Review Desk", path: "/admin/queue", workspace: "operations" },
-      { name: "IOTP Management", path: "/admin/queue", workspace: "operations" },
+      { name: "Medical Review Desk", path: "/admin/medical-review" },
       { name: "Standards Database", path: "/admin/settings" }
     ]
   },
   {
-    category: "Financials",
-    icon: <DollarSign className="w-5 h-5" />,
+    category: "Channels",
+    icon: <Megaphone className="w-5 h-5" />,
     links: [
-      { name: "Monthly Billables", path: "/admin/queue", workspace: "operations" },
-      { name: "Network API Status", path: "/admin/queue", workspace: "operations" }
+      { name: "Native", path: "/admin/native" },
+      { name: "Paid Social", path: "/admin/paid-social" },
+      { name: "Media", path: "/admin/media" },
+      { name: "Newsletter", path: "/admin/newsletter" },
+      { name: "Content Marketing", path: "/admin/content-marketing" }
     ]
   },
   {
@@ -61,7 +64,8 @@ const navMap: NavSection[] = [
     links: [
       { name: "External Access Hub", path: "/admin/external-hub" },
       { name: "Brand Integrity Portal", path: "/brand-application" },
-      { name: "Partner Creative Portal", path: "/auth" }
+      { name: "Partner Login", path: "/partner/login" },
+      { name: "Admin Settings", path: "/admin/settings" }
     ]
   }
 ];

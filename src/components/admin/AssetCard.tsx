@@ -120,16 +120,18 @@ export default function AssetCard({
           </div>
         )}
 
-        {/* Promo Copy */}
+        {/* Promo Copy / Ad Copy */}
         {promoCopy && (
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">Promo Copy</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                {channel === 'paid_social_search' ? 'Ad Copy' : 'Promo Copy'}
+              </span>
               <Button
                 size="sm"
                 variant="ghost"
                 className="h-6 px-2"
-                onClick={() => copyToClipboard(promoCopy, 'Promo copy')}
+                onClick={() => copyToClipboard(promoCopy, channel === 'paid_social_search' ? 'Ad copy' : 'Promo copy')}
               >
                 <Copy className="w-3 h-3" />
               </Button>

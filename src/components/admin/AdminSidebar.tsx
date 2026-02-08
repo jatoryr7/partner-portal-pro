@@ -5,7 +5,7 @@ import {
   ArrowLeftRight,
   Building2,
   Briefcase,
-  Package,
+  ShieldCheck,
   Users,
   Compass,
   BarChart3,
@@ -44,6 +44,7 @@ const primaryWorkspaces = [
 const quickLinks = [
   { title: 'Brand Directory', url: '/admin/brands', icon: Building2 },
   { title: 'Deals CRM', url: '/admin/deals', icon: Briefcase },
+  { title: 'Medical Review', url: '/admin/medical-review', icon: ShieldCheck },
 ];
 
 const channelItems = [

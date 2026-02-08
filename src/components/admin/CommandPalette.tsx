@@ -37,6 +37,7 @@ interface SearchResult {
 
 const navigationPages: SearchResult[] = [
   { id: 'nav-dashboard', type: 'page', title: 'Dashboard', url: '/admin' },
+  { id: 'nav-medical-review', type: 'page', title: 'Medical Review', url: '/admin/medical-review' },
   { id: 'nav-queue', type: 'page', title: 'Campaign Queue', url: '/admin/queue' },
   { id: 'nav-brands', type: 'page', title: 'Brand Directory', url: '/admin/brands' },
   { id: 'nav-deals', type: 'page', title: 'Deals CRM', url: '/admin/deals' },

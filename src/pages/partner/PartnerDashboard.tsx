@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,7 +31,8 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
-  FileDown
+  FileDown,
+  FolderOpen
 } from 'lucide-react';
 import { CampaignStage, CampaignPriority } from '@/types/campaign';
 import { format, differenceInDays } from 'date-fns';
@@ -263,6 +264,12 @@ export default function PartnerDashboard() {
         </div>
         {!isPreviewMode && (
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" asChild className="rounded-none text-muted-foreground">
+              <Link to="/directory">
+                <FolderOpen className="w-4 h-4 mr-2" />
+                Public Directory
+              </Link>
+            </Button>
             {roles.includes('admin') && (
               <Button 
                 variant="outline" 
