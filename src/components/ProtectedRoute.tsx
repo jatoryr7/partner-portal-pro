@@ -13,8 +13,19 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
   const location = useLocation();
   const isPreviewMode = searchParams.get('preview') === 'true';
 
+  console.log('[ProtectedRoute] Guard Check:', {
+    loading,
+    user: user ? { id: user.id, email: user.email } : null,
+    roles,
+    activeRole,
+    requiredRole,
+    path: location.pathname,
+    isPreviewMode,
+  });
+
   // Critical: while loading, only show spinner — never redirect (prevents auth redirect loops)
   if (loading) {
+    console.log('[ProtectedRoute] ⏳ Still loading auth — showing spinner');
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -23,41 +34,43 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
   }
 
   if (!user) {
-    // No session: redirect to role-specific login (e.g. /admin -> /admin/login)
     const loginPath = requiredRole === 'admin' ? '/admin/login' : '/partner/login';
+    console.log('[ProtectedRoute] ❌ No user — redirecting to', loginPath);
     return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
-  // If user has the required role, always allow access (render children). Never redirect to /.
   if (requiredRole && roles.includes(requiredRole)) {
+    console.log('[ProtectedRoute] ✅ User has required role — rendering children');
     return <>{children}</>;
   }
 
-  // Roles not yet loaded or empty: redirect to login so they can re-auth
   if (requiredRole && roles.length === 0) {
     const loginPath = requiredRole === 'admin' ? '/admin/login' : '/partner/login';
+    console.log('[ProtectedRoute] ⚠️ Roles empty — redirecting to', loginPath);
     return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
-  // Allow admins to preview partner portal
   if (requiredRole === 'partner' && roles.includes('admin') && isPreviewMode) {
+    console.log('[ProtectedRoute] ✅ Admin preview mode — rendering children');
     return <>{children}</>;
   }
 
-  // User lacks required role: redirect to their zone (admin -> /admin, partner -> /partner)
   if (requiredRole) {
     if (roles.includes('admin')) {
+      console.log('[ProtectedRoute] 🔀 Wrong role — redirecting to /admin');
       return <Navigate to="/admin" replace />;
     }
     if (roles.includes('partner')) {
+      console.log('[ProtectedRoute] 🔀 Wrong role — redirecting to /partner');
       return <Navigate to="/partner" replace />;
     }
   }
 
-  // Multi-role user without activeRole and not hitting a role-specific route: show role selector at /
   if (roles.length > 1 && !activeRole) {
+    console.log('[ProtectedRoute] 🔀 Multi-role, no active — redirecting to /');
     return <Navigate to="/" replace />;
   }
 
+  console.log('[ProtectedRoute] ✅ Default — rendering children');
   return <>{children}</>;
 }
