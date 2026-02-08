@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation, Link, Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,7 +14,7 @@ import { Loader2, Shield, ArrowLeft } from 'lucide-react';
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 
-export default function AdminLogin() {
+const AdminLogin = React.forwardRef<HTMLDivElement>(function AdminLogin(_props, _ref) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -215,4 +215,6 @@ export default function AdminLogin() {
       </button>
     </>
   );
-}
+});
+
+export default AdminLogin;
