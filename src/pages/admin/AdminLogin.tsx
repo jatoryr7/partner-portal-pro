@@ -26,7 +26,11 @@ export default function AdminLogin() {
   const { toast } = useToast();
 
   const fromRaw = (location.state as any)?.from?.pathname;
-  const from = typeof fromRaw === 'string' && fromRaw.startsWith('/admin') ? fromRaw : '/admin';
+  // Never redirect back to login (avoids redirect loops)
+  const from =
+    typeof fromRaw === 'string' && fromRaw.startsWith('/admin') && fromRaw !== '/admin/login'
+      ? fromRaw
+      : '/admin';
 
   if (loading) {
     return (
@@ -101,8 +105,7 @@ export default function AdminLogin() {
             title: 'Welcome back!',
             description: 'You have successfully signed in.',
           });
-          const target = typeof from === 'string' && from.startsWith('/admin') ? from : '/admin';
-          console.log('Admin login successful, redirecting to...', target);
+          const target = from; // already normalized (never /admin/login)
           navigate(target, { replace: true });
         }
       }

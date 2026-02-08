@@ -235,21 +235,21 @@ export function Brand360Drawer({ brandId, isOpen, onClose }: Brand360DrawerProps
             </CardHeader>
             <CardContent className="space-y-3">
               {activeDeals.length > 0 ? (
-                activeDeals.map((deal: any) => (
-                  <div key={deal.id} className="border border-border/50 rounded-none p-3 space-y-2">
+                activeDeals.map((deal: any, idx: number) => (
+                  <div key={deal?.id ?? `deal-${idx}`} className="border border-border/50 rounded-none p-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium">{deal.deal_name}</span>
+                      <span className="font-medium">{deal?.deal_name ?? 'Deal'}</span>
                       <Badge variant="outline" className="rounded-none">
-                        {deal.deal_stage || 'Draft'}
+                        {deal?.deal_stage || 'Draft'}
                       </Badge>
                     </div>
-                    {deal.deal_value && (
+                    {deal?.deal_value != null && (
                       <div className="flex items-center gap-1 text-emerald-600">
                         <DollarSign className="h-4 w-4" />
-                        <span className="font-medium">${deal.deal_value.toLocaleString()}</span>
+                        <span className="font-medium">${Number(deal.deal_value).toLocaleString()}</span>
                       </div>
                     )}
-                    {deal.start_date && deal.end_date && (
+                    {deal?.start_date && deal?.end_date && (
                       <div className="text-xs text-muted-foreground">
                         {format(new Date(deal.start_date), 'MMM d')} - {format(new Date(deal.end_date), 'MMM d, yyyy')}
                       </div>
@@ -317,25 +317,27 @@ export function Brand360Drawer({ brandId, isOpen, onClose }: Brand360DrawerProps
             </CardHeader>
             <CardContent className="space-y-3">
               {pendingCreatives.length > 0 ? (
-                pendingCreatives.map((creative: any) => (
-                  <div key={creative.id} className="border border-border/50 rounded-none p-3 space-y-2">
+                pendingCreatives.map((creative: any, idx: number) => (
+                  <div key={creative?.id ?? `creative-${idx}`} className="border border-border/50 rounded-none p-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-amber-600" />
-                        <span className="font-medium">{creative.channel}</span>
+                        <span className="font-medium">{creative?.channel ?? 'Creative'}</span>
                       </div>
                       <Badge variant="outline" className="rounded-none bg-amber-50 text-amber-700 border-amber-300">
                         Pending
                       </Badge>
                     </div>
-                    {creative.context_instructions && (
+                    {creative?.context_instructions && (
                       <p className="text-sm text-muted-foreground line-clamp-2">
                         {creative.context_instructions}
                       </p>
                     )}
-                    <div className="text-xs text-muted-foreground">
-                      Requested {format(new Date(creative.created_at), 'MMM d, yyyy')}
-                    </div>
+                    {creative?.created_at && (
+                      <div className="text-xs text-muted-foreground">
+                        Requested {format(new Date(creative.created_at), 'MMM d, yyyy')}
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (

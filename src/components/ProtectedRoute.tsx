@@ -13,6 +13,7 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
   const location = useLocation();
   const isPreviewMode = searchParams.get('preview') === 'true';
 
+  // Critical: while loading, only show spinner — never redirect (prevents auth redirect loops)
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">

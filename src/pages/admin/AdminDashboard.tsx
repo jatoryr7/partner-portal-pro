@@ -86,8 +86,8 @@ export default function AdminDashboard() {
   const { user } = useAuth();
   const displayName =
     (user?.user_metadata?.full_name as string | undefined) ||
-    user?.email?.split("@")[0] ||
-    "Admin";
+    user?.email?.split?.('@')?.[0] ||
+    'Admin';
 
   return (
     <div className="space-y-6">
