@@ -26,7 +26,6 @@ export default function AdminLogin() {
   const { toast } = useToast();
 
   const fromRaw = (location.state as any)?.from?.pathname;
-  // Never redirect back to login (avoids redirect loops)
   const from =
     typeof fromRaw === 'string' && fromRaw.startsWith('/admin') && fromRaw !== '/admin/login'
       ? fromRaw
@@ -46,23 +45,12 @@ export default function AdminLogin() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
-    try {
-      emailSchema.parse(email);
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        newErrors.email = e.errors[0].message;
-      }
+    try { emailSchema.parse(email); } catch (e) {
+      if (e instanceof z.ZodError) newErrors.email = e.errors[0].message;
     }
-    
-    try {
-      passwordSchema.parse(password);
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        newErrors.password = e.errors[0].message;
-      }
+    try { passwordSchema.parse(password); } catch (e) {
+      if (e instanceof z.ZodError) newErrors.password = e.errors[0].message;
     }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -83,7 +71,6 @@ export default function AdminLogin() {
         variant: 'destructive',
       });
     } else {
-      // Verify user has admin role - check user_roles table
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data: userRoles } = await supabase
@@ -105,86 +92,109 @@ export default function AdminLogin() {
             title: 'Welcome back!',
             description: 'You have successfully signed in.',
           });
-          const target = from; // already normalized (never /admin/login)
-          navigate(target, { replace: true });
+          navigate(from, { replace: true });
         }
       }
     }
     setIsLoading(false);
   };
 
+  const handleHardReset = async () => {
+    await supabase.auth.signOut();
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.reload();
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6">
+    <>
       <Helmet>
         <title>Admin Login | Partner Portal</title>
       </Helmet>
-      <Card className="w-full max-w-md rounded-none border-border">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center gap-2 mb-2">
-            <Shield className="h-6 w-6 text-[#1ABC9C]" />
-            <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
-          </div>
-          <CardDescription>
-            Sign in to access the Command Center
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSignIn} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="admin@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="rounded-none"
-                disabled={isLoading}
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
-              )}
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <Card className="w-full max-w-md rounded-none border-border">
+          <CardHeader className="space-y-1">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="h-6 w-6 text-[#1ABC9C]" />
+              <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="rounded-none"
+            <CardDescription>
+              Sign in to access the Command Center
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="admin@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="rounded-none"
+                  disabled={isLoading}
+                />
+                {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="rounded-none"
+                  disabled={isLoading}
+                />
+                {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+              </div>
+              <Button
+                type="submit"
+                className="w-full rounded-none bg-[#1ABC9C] hover:bg-[#16A085] text-white"
                 disabled={isLoading}
-              />
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password}</p>
-              )}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
+              </Button>
+            </form>
+            <div className="mt-4 text-center">
+              <Link
+                to="/"
+                className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+              >
+                <ArrowLeft className="h-3 w-3" />
+                Back to Public Directory
+              </Link>
             </div>
-            <Button
-              type="submit"
-              className="w-full rounded-none bg-[#1ABC9C] hover:bg-[#16A085] text-white"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
-              )}
-            </Button>
-          </form>
-          <div className="mt-4 text-center">
-            <Link
-              to="/"
-              className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-            >
-              <ArrowLeft className="h-3 w-3" />
-              Back to Public Directory
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <button
+        onClick={handleHardReset}
+        style={{
+          position: 'fixed',
+          bottom: '1rem',
+          right: '1rem',
+          zIndex: 9999,
+          backgroundColor: '#dc2626',
+          color: 'white',
+          padding: '0.5rem 1rem',
+          border: 'none',
+          cursor: 'pointer',
+          fontSize: '0.75rem',
+          fontWeight: 600,
+        }}
+      >
+        ⚠️ Hard Reset App
+      </button>
+    </>
   );
 }
