@@ -25,7 +25,7 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import StakeholderDashboard from "./pages/admin/StakeholderDashboard";
-import AdminQueue from "./pages/admin/AdminQueue";
+import AdminQueuePage from "./pages/admin/operations/AdminQueuePage";
 import SubmissionReview from "./pages/admin/SubmissionReview";
 import UserManagement from "./pages/admin/UserManagement";
 import BrandDirectory from "./pages/admin/BrandDirectory";
@@ -86,7 +86,7 @@ const App = () => (
                   }
                 >
                   <Route index element={<AdminDashboard />} />
-                  <Route path="queue" element={<AdminQueue />} />
+                  <Route path="queue" element={<AdminQueuePage />} />
                   <Route path="submission/:id" element={<SubmissionReview />} />
                   <Route path="stakeholders" element={<StakeholderDashboard />} />
                   <Route path="users" element={<UserManagement />} />
