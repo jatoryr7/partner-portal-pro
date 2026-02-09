@@ -115,9 +115,10 @@ export default function ChannelView({
     const matchesSearch = !searchTerm || 
       asset.partners?.company_name.toLowerCase().includes(searchTerm.toLowerCase());
     
+    // For paid social search, mediaPlatform is stored in affiliate_platform field
     const matchesFilter = filterValue === 'all' || 
       (filterField === 'affiliate_platform' && asset.affiliate_platform === filterValue) ||
-      (filterField === 'media_platform' && asset.copy_text === filterValue);
+      (filterField === 'media_platform' && asset.affiliate_platform === filterValue);
     
     const feedback = asset.asset_feedback?.[0];
     const matchesStatus = statusFilter === 'all' || 
@@ -202,9 +203,10 @@ export default function ChannelView({
               partnerName={asset.partners?.company_name || 'Unknown'}
               channel={channel}
               affiliateLink={asset.affiliate_link || undefined}
-              affiliatePlatform={asset.affiliate_platform || undefined}
+              affiliatePlatform={channel === 'paid_social_search' ? undefined : (asset.affiliate_platform || undefined)}
+              mediaPlatform={channel === 'paid_social_search' ? (asset.affiliate_platform || undefined) : undefined}
               driverTypes={asset.driver_types || undefined}
-              promoCopy={asset.promo_copy || undefined}
+              promoCopy={channel === 'paid_social_search' ? (asset.copy_text || undefined) : (asset.promo_copy || undefined)}
               contextInstructions={asset.context_instructions || undefined}
               fileUrls={asset.file_urls || []}
               feedbackStatus={(asset.asset_feedback?.[0]?.status as FeedbackStatus) || 'pending'}

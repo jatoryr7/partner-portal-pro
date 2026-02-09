@@ -443,17 +443,17 @@ export function getRoleConfig(role: ViewRole | null): RoleConfig | undefined {
 }
 
 export function getVisibleSubTabs(role: ViewRole | null): string[] {
-  if (!role) return ['pacing', 'intelligence', 'medical', 'orders', 'performance', 'billables'];
+  if (!role) return ['pacing', 'intelligence', 'orders', 'performance', 'billables'];
   
   switch (role) {
     case 'accounting':
       return ['billables'];
     case 'medical':
-      return ['medical'];
+      return []; // Medical Review is now a top-level nav item
     case 'analyst':
-      return ['pacing', 'intelligence', 'medical', 'orders', 'performance', 'billables'];
+      return ['pacing', 'intelligence', 'orders', 'performance', 'billables'];
     case 'executive':
     default:
-      return ['pacing', 'intelligence', 'medical', 'orders', 'performance', 'billables'];
+      return ['pacing', 'intelligence', 'orders', 'performance', 'billables'];
   }
 }
